@@ -4,6 +4,9 @@ use std::process::Command;
 fn main() {
     slint_build::compile("ui/app.slint").expect("compile Slint UI");
     windows_resources();
+    if std::env::var_os("CARGO_FEATURE_EMBEDDED_BACKEND").is_some() {
+        pack_adb();
+    }
     // B-27: Windows N / KN have no mfplat.dll until the Media Feature Pack
     // is installed. A normal import would stop the loader before ZenLink
     // runs; delay-loaded, ZenLink starts and explains instead
@@ -14,6 +17,34 @@ fn main() {
     }
 }
 
+/// Portable.exe (B-28): deflate Google's adb files from `ZENLINK_ADB_DIR`
+/// into OUT_DIR and write `packed_adb.rs` (name, original size, bytes) for
+/// `android::PACKED_ADB`. About 9.6 MB of files take about 4.3 MB.
+fn pack_adb() {
+    println!("cargo:rerun-if-env-changed=ZENLINK_ADB_DIR");
+    let src = PathBuf::from(
+        std::env::var_os("ZENLINK_ADB_DIR")
+            .expect("ZENLINK_ADB_DIR must name Google's platform-tools folder"),
+    );
+    let out = PathBuf::from(std::env::var("OUT_DIR").unwrap());
+    let mut code = String::from("[\n");
+    for name in ["adb.exe", "AdbWinApi.dll", "AdbWinUsbApi.dll", "NOTICE.txt"] {
+        let path = src.join(name);
+        println!("cargo:rerun-if-changed={}", path.display());
+        let data = std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let packed = miniz_oxide::deflate::compress_to_vec(&data, 9);
+        let dest = out.join(format!("{name}.deflate"));
+        std::fs::write(&dest, packed).expect("write packed adb");
+        code += &format!(
+            "    ({name:?}, {}, include_bytes!({:?})),\n",
+            data.len(),
+            dest.to_string_lossy()
+        );
+    }
+    code += "]\n";
+    std::fs::write(out.join("packed_adb.rs"), code).expect("write packed_adb.rs");
+}
+
 /// The exe's icon and version (Explorer, taskbar, OBS window list). Needs
 /// rc.exe from the Windows SDK; without it the exe has no icon resource.
 fn windows_resources() {
@@ -21,7 +52,7 @@ fn windows_resources() {
         return;
     }
     let manifest = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let icon = manifest.join("../../ZenshiroDev/resources/assets/zenlink.ico");
+    let icon = manifest.join("../../../assets/zenlink.ico");
     println!("cargo:rerun-if-changed={}", icon.display());
     let Some(rc) = find_rc() else {
         println!("cargo:warning=rc.exe not found: ZenLink.exe is built without an icon");

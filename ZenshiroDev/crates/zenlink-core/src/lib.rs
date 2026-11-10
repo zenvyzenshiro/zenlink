@@ -33,9 +33,24 @@ pub fn data_dir_in(base: &Path) -> PathBuf {
     base.join(DATA_DIR_NAME)
 }
 
-/// `%LOCALAPPDATA%\ZenLink-Next`, when LOCALAPPDATA is set.
+/// The app's data folder.
+pub fn data_dir() -> PathBuf {
+    local_data_dir().unwrap_or_else(std::env::temp_dir)
+}
+
+/// `%LOCALAPPDATA%\ZenLink-Next`, when LOCALAPPDATA is set, or XDG on Linux.
 pub fn local_data_dir() -> Option<PathBuf> {
-    std::env::var_os("LOCALAPPDATA").map(|b| data_dir_in(Path::new(&b)))
+    #[cfg(windows)]
+    {
+        std::env::var_os("LOCALAPPDATA").map(|b| data_dir_in(Path::new(&b)))
+    }
+    #[cfg(not(windows))]
+    {
+        std::env::var_os("XDG_DATA_HOME")
+            .map(PathBuf::from)
+            .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".local/share")))
+            .map(|b| data_dir_in(&b))
+    }
 }
 
 #[cfg(test)]

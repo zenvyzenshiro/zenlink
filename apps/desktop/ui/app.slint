@@ -2883,6 +2883,9 @@ export component AppWindow inherits Window {
     in property <[DotTile]> dots-tiles;
     // The dot field is on screen (the window draws it only then).
     out property <bool> dots-on: !root.picture && root.prefs.dots && !root.adding;
+    in property <image> video-frame;
+    callback stage-action(string, length, length);
+    callback stage-scroll(length, length, float);
     out property <bool> stage-hover: stage-ta.has-hover;
     out property <length> stage-mouse-x: stage-ta.mouse-x;
     out property <length> stage-mouse-y: stage-ta.mouse-y;
@@ -3105,7 +3108,43 @@ export component AppWindow inherits Window {
                         border-width: 1px;
                         border-color: Theme.edge;
                         clip: true;
-                        stage-ta := TouchArea { }
+                        if root.picture: Image {
+                            source: root.video-frame;
+                            width: parent.width;
+                            height: parent.height;
+                            image-fit: root.prefs.fit == "cover" ? cover : root.prefs.fit == "fill" ? fill : contain;
+                        }
+                        stage-ta := TouchArea {
+                            pointer-event(ev) => {
+                                if root.picture {
+                                    if ev.kind == PointerEventKind.down {
+                                        if ev.button == PointerEventButton.right {
+                                            root.stage-action("back", self.mouse-x, self.mouse-y);
+                                        } else if ev.button == PointerEventButton.middle {
+                                            root.stage-action("middle", self.mouse-x, self.mouse-y);
+                                        } else if ev.button == PointerEventButton.left {
+                                            root.stage-action("down", self.mouse-x, self.mouse-y);
+                                        }
+                                    } else if ev.kind == PointerEventKind.up {
+                                        if ev.button == PointerEventButton.left {
+                                            root.stage-action("up", self.mouse-x, self.mouse-y);
+                                        }
+                                    }
+                                }
+                            }
+                            moved => {
+                                if root.picture && self.pressed {
+                                    root.stage-action("move", self.mouse-x, self.mouse-y);
+                                }
+                            }
+                            scroll-event(ev) => {
+                                if root.picture {
+                                    root.stage-scroll(self.mouse-x, self.mouse-y, ev.delta-y / 1px);
+                                    return accept;
+                                }
+                                return reject;
+                            }
+                        }
                         // Not behind the add-device card: dots through its glass read as noise.
                         if root.dots-on: Rectangle {
                             for t in root.dots-tiles: Image {

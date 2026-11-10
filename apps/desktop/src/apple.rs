@@ -462,42 +462,50 @@ fn secrets() -> Option<(std::path::PathBuf, serde_json::Map<String, Value>)> {
 
 /// DPAPI seal (`protect`) or open, no UI.
 fn dpapi(data: &[u8], protect: bool) -> Option<Vec<u8>> {
-    use windows::Win32::Foundation::{LocalFree, HLOCAL};
-    use windows::Win32::Security::Cryptography::{
-        CryptProtectData, CryptUnprotectData, CRYPTPROTECT_UI_FORBIDDEN, CRYPT_INTEGER_BLOB,
-    };
-    let input = CRYPT_INTEGER_BLOB {
-        cbData: data.len() as u32,
-        pbData: data.as_ptr() as *mut u8,
-    };
-    let mut out = CRYPT_INTEGER_BLOB::default();
-    // SAFETY: `input` points at `data`, alive for the call; `out` is freed with LocalFree.
-    unsafe {
-        let r = if protect {
-            CryptProtectData(
-                &input,
-                None,
-                None,
-                None,
-                None,
-                CRYPTPROTECT_UI_FORBIDDEN,
-                &mut out,
-            )
-        } else {
-            CryptUnprotectData(
-                &input,
-                None,
-                None,
-                None,
-                None,
-                CRYPTPROTECT_UI_FORBIDDEN,
-                &mut out,
-            )
+    #[cfg(windows)]
+    {
+        use windows::Win32::Foundation::{LocalFree, HLOCAL};
+        use windows::Win32::Security::Cryptography::{
+            CryptProtectData, CryptUnprotectData, CRYPTPROTECT_UI_FORBIDDEN, CRYPT_INTEGER_BLOB,
         };
-        r.ok()?;
-        let v = std::slice::from_raw_parts(out.pbData, out.cbData as usize).to_vec();
-        let _ = LocalFree(Some(HLOCAL(out.pbData.cast())));
-        Some(v)
+        let input = CRYPT_INTEGER_BLOB {
+            cbData: data.len() as u32,
+            pbData: data.as_ptr() as *mut u8,
+        };
+        let mut out = CRYPT_INTEGER_BLOB::default();
+        // SAFETY: `input` points at `data`, alive for the call; `out` is freed with LocalFree.
+        unsafe {
+            let r = if protect {
+                CryptProtectData(
+                    &input,
+                    None,
+                    None,
+                    None,
+                    None,
+                    CRYPTPROTECT_UI_FORBIDDEN,
+                    &mut out,
+                )
+            } else {
+                CryptUnprotectData(
+                    &input,
+                    None,
+                    None,
+                    None,
+                    None,
+                    CRYPTPROTECT_UI_FORBIDDEN,
+                    &mut out,
+                )
+            };
+            r.ok()?;
+            let v = std::slice::from_raw_parts(out.pbData, out.cbData as usize).to_vec();
+            let _ = LocalFree(Some(HLOCAL(out.pbData.cast())));
+            Some(v)
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = protect;
+        Some(data.to_vec())
     }
 }
 

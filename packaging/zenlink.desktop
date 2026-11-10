@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=ZenLink
+Comment=Mirror and control Android, iPhone, and iPad on Linux
+Exec=zenlink
+Icon=zenlink
+Terminal=false
+Type=Application
+Categories=Utility;AudioVideo;Video;
+Keywords=screen;mirror;android;ios;scrcpy;airplay;
+StartupWMClass=ZenLink

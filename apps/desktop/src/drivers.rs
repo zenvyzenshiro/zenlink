@@ -11,6 +11,10 @@
 //! `apple` (Apple drivers only), `coexist` (libusb0 upper filter on usbccgp: UNSAFE, it crashed
 //! Windows on an iPad; never used, removal offered), `unknown`.
 
+pub const ACTIONS: [&str; 3] = ["bind", "restore", "removefilter"];
+
+#[cfg(windows)]
+mod imp {
 use std::collections::BTreeMap;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
@@ -30,7 +34,6 @@ use windows::Win32::System::Registry::{
 };
 
 const NO_WINDOW: u32 = 0x0800_0000;
-pub const ACTIONS: [&str; 3] = ["bind", "restore", "removefilter"];
 
 struct Key(HKEY);
 
@@ -672,6 +675,49 @@ fn uuid_hex() -> String {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default();
     format!("{:x}{:x}", t.as_nanos(), std::process::id())
+}
+}
+
+#[cfg(windows)]
+pub use imp::*;
+
+#[cfg(not(windows))]
+pub fn tools_dir() -> std::path::PathBuf {
+    zenlink_core::data_dir().join("tools")
+}
+
+#[cfg(not(windows))]
+pub fn libusb0_packages() -> std::collections::BTreeMap<String, String> {
+    std::collections::BTreeMap::new()
+}
+
+#[cfg(not(windows))]
+pub fn device_states(_packages: &std::collections::BTreeMap<String, String>) -> Vec<serde_json::Value> {
+    Vec::new()
+}
+
+#[cfg(not(windows))]
+pub fn snapshot() -> serde_json::Value {
+    serde_json::json!({
+        "devices": [],
+        "firewall_blocked": false,
+        "packages": {}
+    })
+}
+
+#[cfg(not(windows))]
+pub fn firewall_blocked() -> bool {
+    false
+}
+
+#[cfg(not(windows))]
+pub fn allow_network() -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(not(windows))]
+pub fn run_action(_action: &str, _instance: &str) -> Result<serde_json::Value, String> {
+    Err("Driver actions not applicable on Linux".into())
 }
 
 #[cfg(test)]

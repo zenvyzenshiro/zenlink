@@ -383,13 +383,22 @@ pub fn run(a: AppArgs) -> Result<(), slint::PlatformError> {
         .renderer_name("femtovg".into())
         // Frameless glass like the main window.
         .with_winit_window_attributes_hook(|attrs| {
-            use slint::winit_030::winit::platform::windows::{
-                BackdropType, WindowAttributesExtWindows,
-            };
-            attrs
-                .with_transparent(true)
-                .with_decorations(false)
-                .with_system_backdrop(BackdropType::None)
+            #[cfg(windows)]
+            {
+                use slint::winit_030::winit::platform::windows::{
+                    BackdropType, WindowAttributesExtWindows,
+                };
+                attrs
+                    .with_transparent(true)
+                    .with_decorations(false)
+                    .with_system_backdrop(BackdropType::None)
+            }
+            #[cfg(not(windows))]
+            {
+                attrs
+                    .with_transparent(false)
+                    .with_decorations(false)
+            }
         })
         .select()?;
     let ui = AppWin::new()?;

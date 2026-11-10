@@ -8,6 +8,8 @@
 pub mod buffer;
 #[cfg(windows)]
 mod wasapi;
+#[cfg(target_os = "linux")]
+mod linux_cpal;
 
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering::Relaxed};
 use std::sync::{Arc, Mutex};
@@ -77,7 +79,9 @@ impl Player {
         });
         #[cfg(windows)]
         let thread = wasapi::spawn(shared.clone())?;
-        #[cfg(not(windows))]
+        #[cfg(target_os = "linux")]
+        let thread = linux_cpal::spawn(shared.clone())?;
+        #[cfg(not(any(windows, target_os = "linux")))]
         let thread: JoinHandle<()> = return Err("no sound backend on this platform yet".into());
         Ok(Self {
             shared,
@@ -156,6 +160,7 @@ impl Drop for Player {
 }
 
 /// Samples per block for a frame count (interleaved stereo).
+#[allow(dead_code)]
 pub(crate) fn samples(frames: usize) -> usize {
     frames * CHANNELS
 }

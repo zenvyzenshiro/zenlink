@@ -6,15 +6,15 @@
 //! the release asset; [`zenlink_core::update`] already refused assets from
 //! anywhere but this repository's release downloads.
 
-use std::ffi::c_void;
-use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::{Duration, Instant};
+use zenlink_core::update::{Asset, Channel, Offer, Release, Version};
 
+#[cfg(windows)]
 use windows::core::{HSTRING, PCWSTR};
+#[cfg(windows)]
 use windows::Win32::Networking::WinHttp::*;
+#[cfg(windows)]
 use windows::Win32::Security::Cryptography::*;
-use zenlink_core::update::{self, Asset, Channel, Offer, Release, Version};
 
 /// `ZenLink.exe --replace-old=<path>`: a portable update started this exe;
 /// delete the old one once it has exited.
@@ -39,20 +39,28 @@ pub const STORE_PRODUCT_ID: &str = "9N67KCFZSB1T";
 /// True when this process runs from an MSIX package (the Microsoft Store
 /// edition). An unpackaged exe gets APPMODEL_ERROR_NO_PACKAGE.
 pub fn is_store() -> bool {
-    use std::sync::OnceLock;
-    static STORE: OnceLock<bool> = OnceLock::new();
-    *STORE.get_or_init(|| {
-        let mut len = 0u32;
-        let r = unsafe {
-            windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName(&mut len, None)
-        };
-        // ERROR_INSUFFICIENT_BUFFER (122): there is a package name to read.
-        r.0 == 122
-    })
+    #[cfg(windows)]
+    {
+        use std::sync::OnceLock;
+        static STORE: OnceLock<bool> = OnceLock::new();
+        *STORE.get_or_init(|| {
+            let mut len = 0u32;
+            let r = unsafe {
+                windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName(&mut len, None)
+            };
+            // ERROR_INSUFFICIENT_BUFFER (122): there is a package name to read.
+            r.0 == 122
+        })
+    }
+    #[cfg(not(windows))]
+    {
+        false
+    }
 }
 
 /// Opens ZenLink's page in the Microsoft Store app.
 pub fn open_store_page() {
+    #[cfg(windows)]
     let _ = std::process::Command::new("explorer.exe")
         .arg(format!(
             "ms-windows-store://pdp/?productid={STORE_PRODUCT_ID}"
@@ -60,47 +68,9 @@ pub fn open_store_page() {
         .spawn();
 }
 
-/// Where the logs really are. A packaged app's new files under
-/// %LOCALAPPDATA% go to the package's private LocalCache, which Explorer
-/// (outside the package) does not see at the usual path.
+/// Where the logs really are.
 pub fn visible_log_dir() -> PathBuf {
-    let dir = zenlink_core::log_dir();
-    if !is_store() || dir.exists() {
-        return dir;
-    }
-    let (Some(local), Some(pfn)) = (std::env::var_os("LOCALAPPDATA"), package_family_name()) else {
-        return dir;
-    };
-    let local = PathBuf::from(local);
-    match dir.strip_prefix(&local) {
-        Ok(rest) => local
-            .join("Packages")
-            .join(pfn)
-            .join("LocalCache")
-            .join("Local")
-            .join(rest),
-        Err(_) => dir,
-    }
-}
-
-fn package_family_name() -> Option<String> {
-    use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFamilyName;
-    let mut len = 0u32;
-    unsafe {
-        let _ = GetCurrentPackageFamilyName(&mut len, None);
-        if len == 0 {
-            return None;
-        }
-        let mut buf = vec![0u16; len as usize];
-        if GetCurrentPackageFamilyName(&mut len, Some(windows::core::PWSTR(buf.as_mut_ptr()))).0
-            != 0
-        {
-            return None;
-        }
-        Some(String::from_utf16_lossy(
-            &buf[..len.saturating_sub(1) as usize],
-        ))
-    }
+    zenlink_core::log_dir()
 }
 
 pub fn kind() -> Kind {
@@ -124,16 +94,23 @@ pub fn current_version() -> Version {
     Version::parse(env!("CARGO_PKG_VERSION")).expect("Cargo version")
 }
 
-struct Handle(*mut c_void);
-impl Drop for Handle {
-    fn drop(&mut self) {
-        if !self.0.is_null() {
-            unsafe {
-                let _ = WinHttpCloseHandle(self.0);
+#[cfg(windows)]
+mod win {
+    use super::*;
+    use std::ffi::c_void;
+    use std::io::Write;
+    use std::time::{Duration, Instant};
+
+    struct Handle(*mut c_void);
+    impl Drop for Handle {
+        fn drop(&mut self) {
+            if !self.0.is_null() {
+                unsafe {
+                    let _ = WinHttpCloseHandle(self.0);
+                }
             }
         }
     }
-}
 
 fn last_error(what: &str) -> String {
     format!("{what}: {}", windows::core::Error::from_thread())
@@ -568,3 +545,40 @@ mod tests {
         assert!(!dest.exists());
     }
 }
+}
+
+#[cfg(windows)]
+pub use win::*;
+
+#[cfg(not(windows))]
+pub fn check(_channel: Channel) -> Result<Offer, String> {
+    Err("Updates are managed via your package manager on Linux".into())
+}
+
+#[cfg(not(windows))]
+pub fn asset_for(_kind: Kind, _r: &Release) -> Option<&Asset> {
+    None
+}
+
+#[cfg(not(windows))]
+pub fn sha256_hex(_data: &[u8]) -> Result<String, String> {
+    Err("Not implemented on Linux".into())
+}
+
+#[cfg(not(windows))]
+pub fn download(_a: &Asset, _dest: &Path, _progress: &dyn Fn(u64, u64)) -> Result<(), String> {
+    Err("Not implemented on Linux".into())
+}
+
+#[cfg(not(windows))]
+pub fn download_path(_kind: Kind, _a: &Asset) -> Result<PathBuf, String> {
+    Err("Not implemented on Linux".into())
+}
+
+#[cfg(not(windows))]
+pub fn launch(_kind: Kind, _file: &Path, _replace: bool) -> Result<(), String> {
+    Err("Not implemented on Linux".into())
+}
+
+#[cfg(not(windows))]
+pub fn finish_portable_update() {}

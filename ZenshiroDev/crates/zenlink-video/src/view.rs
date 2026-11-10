@@ -424,6 +424,12 @@ impl VideoView {
         g.take()
     }
 
+    pub fn poll_frame(&self, _last_seq: u64) -> Option<(u64, u32, u32, std::sync::Arc<Vec<u8>>)> {
+        None
+    }
+
+    pub fn send_pointer(&self, _e: PointerEvent) {}
+
     /// Place the view inside its parent (physical pixels).
     /// Place the view inside its parent (physical pixels), with rounded
     /// corners of `radius` px. Does nothing when nothing changed.

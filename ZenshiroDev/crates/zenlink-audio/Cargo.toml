@@ -12,6 +12,9 @@ description = "ZenLink sound output: the v2.2.31 jitter buffer (portable) and a 
 [dependencies]
 log = { workspace = true }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+cpal = "0.15"
+
 [target.'cfg(windows)'.dependencies.windows]
 workspace = true
 features = [

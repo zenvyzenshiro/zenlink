@@ -32,10 +32,12 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
+#[cfg(windows)]
 use slint::winit_030::winit::platform::windows::{BackdropType, WindowAttributesExtWindows};
 use slint::winit_030::winit::window::WindowLevel;
 use slint::winit_030::WinitWindowAccessor;
 use slint::{ComponentHandle, LogicalSize, Model};
+#[cfg(windows)]
 use windows::Win32::Foundation::HWND;
 
 use zenlink_core::api::Api;
@@ -73,12 +75,26 @@ impl log::Log for FileLog {
 
 /// Local wall-clock time "YYYY-MM-DD HH:MM:SS" (no date crate needed).
 fn local_time() -> String {
-    use windows::Win32::System::SystemInformation::GetLocalTime;
-    let t = unsafe { GetLocalTime() };
-    format!(
-        "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
-        t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond
-    )
+    #[cfg(windows)]
+    {
+        use windows::Win32::System::SystemInformation::GetLocalTime;
+        let t = unsafe { GetLocalTime() };
+        format!(
+            "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
+            t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond
+        )
+    }
+    #[cfg(not(windows))]
+    {
+        let secs = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+        let s = secs % 60;
+        let m = (secs / 60) % 60;
+        let h = (secs / 3600) % 24;
+        format!("{:02}:{:02}:{:02} UTC", h, m, s)
+    }
 }
 
 fn init_log() {
@@ -111,59 +127,67 @@ fn init_log_named(name: &str) {
     }));
 }
 
-/// "Windows build 26200.1234 (25H2)" from the registry, for bug reports.
+/// OS Version for bug reports.
 fn windows_version() -> String {
-    use windows::core::{w, PCWSTR};
-    use windows::Win32::System::Registry::{
-        RegGetValueW, HKEY_LOCAL_MACHINE, RRF_RT_REG_DWORD, RRF_RT_REG_SZ,
-    };
-    let key = w!("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
-    let text = |name: PCWSTR| -> String {
-        let mut buf = [0u16; 64];
-        let mut len = (buf.len() * 2) as u32;
-        let ok = unsafe {
+    #[cfg(windows)]
+    {
+        use windows::core::{w, PCWSTR};
+        use windows::Win32::System::Registry::{
+            RegGetValueW, HKEY_LOCAL_MACHINE, RRF_RT_REG_DWORD, RRF_RT_REG_SZ,
+        };
+        let key = w!("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+        let text = |name: PCWSTR| -> String {
+            let mut buf = [0u16; 64];
+            let mut len = (buf.len() * 2) as u32;
+            let ok = unsafe {
+                RegGetValueW(
+                    HKEY_LOCAL_MACHINE,
+                    key,
+                    name,
+                    RRF_RT_REG_SZ,
+                    None,
+                    Some(buf.as_mut_ptr().cast()),
+                    Some(&mut len),
+                )
+            }
+            .is_ok();
+            if !ok {
+                return String::new();
+            }
+            let n = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
+            String::from_utf16_lossy(&buf[..n])
+        };
+        let mut ubr = 0u32;
+        let mut len = 4u32;
+        let _ = unsafe {
             RegGetValueW(
                 HKEY_LOCAL_MACHINE,
                 key,
-                name,
-                RRF_RT_REG_SZ,
+                w!("UBR"),
+                RRF_RT_REG_DWORD,
                 None,
-                Some(buf.as_mut_ptr().cast()),
+                Some((&mut ubr as *mut u32).cast()),
                 Some(&mut len),
             )
-        }
-        .is_ok();
-        if !ok {
-            return String::new();
-        }
-        let n = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
-        String::from_utf16_lossy(&buf[..n])
-    };
-    let mut ubr = 0u32;
-    let mut len = 4u32;
-    let _ = unsafe {
-        RegGetValueW(
-            HKEY_LOCAL_MACHINE,
-            key,
-            w!("UBR"),
-            RRF_RT_REG_DWORD,
-            None,
-            Some((&mut ubr as *mut u32).cast()),
-            Some(&mut len),
+        };
+        format!(
+            "Windows build {}.{} ({})",
+            text(w!("CurrentBuild")),
+            ubr,
+            text(w!("DisplayVersion"))
         )
-    };
-    format!(
-        "Windows build {}.{} ({})",
-        text(w!("CurrentBuild")),
-        ubr,
-        text(w!("DisplayVersion"))
-    )
+    }
+    #[cfg(not(windows))]
+    {
+        "Linux (X11/Wayland)".to_string()
+    }
 }
 
 #[derive(Default)]
 struct App {
     view: Option<VideoView>,
     streaming: bool,
+    last_frame_seq: u64,
     device_rotation: u32,
     /// (shown w, shown h, settings open) the window was last fitted to.
     fitted: Option<(u32, u32, bool)>,
@@ -338,27 +362,41 @@ fn slide_ease(x: f32) -> f32 {
     bez((lo + hi) / 2.0, y1, y2)
 }
 
+#[cfg(windows)]
+type PlatformHwnd = HWND;
+#[cfg(not(windows))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct PlatformHwnd(pub isize);
+
 pub(crate) fn monitor_rect(w: &slint::Window) -> Option<(i32, i32, u32, u32)> {
-    use windows::Win32::Graphics::Gdi::{
-        GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
-    };
-    let h = hwnd_of(w)?;
-    unsafe {
-        let m = MonitorFromWindow(h, MONITOR_DEFAULTTONEAREST);
-        let mut mi = MONITORINFO {
-            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
-            ..Default::default()
+    #[cfg(windows)]
+    {
+        use windows::Win32::Graphics::Gdi::{
+            GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
         };
-        if !GetMonitorInfoW(m, &mut mi).as_bool() {
-            return None;
+        let h = hwnd_of(w)?;
+        unsafe {
+            let m = MonitorFromWindow(h, MONITOR_DEFAULTTONEAREST);
+            let mut mi = MONITORINFO {
+                cbSize: std::mem::size_of::<MONITORINFO>() as u32,
+                ..Default::default()
+            };
+            if !GetMonitorInfoW(m, &mut mi).as_bool() {
+                return None;
+            }
+            let r = mi.rcMonitor;
+            Some((
+                r.left,
+                r.top,
+                (r.right - r.left) as u32,
+                (r.bottom - r.top) as u32,
+            ))
         }
-        let r = mi.rcMonitor;
-        Some((
-            r.left,
-            r.top,
-            (r.right - r.left) as u32,
-            (r.bottom - r.top) as u32,
-        ))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = w;
+        None
     }
 }
 
@@ -367,33 +405,48 @@ thread_local! {
     static START: Instant = Instant::now();
 }
 
-fn hwnd_of(w: &slint::Window) -> Option<HWND> {
-    use slint::winit_030::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
-    w.with_winit_window(|ww| match ww.window_handle().ok()?.as_raw() {
-        RawWindowHandle::Win32(h) => Some(HWND(h.hwnd.get() as _)),
-        _ => None,
-    })
-    .flatten()
+fn hwnd_of(w: &slint::Window) -> Option<PlatformHwnd> {
+    #[cfg(windows)]
+    {
+        use slint::winit_030::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
+        w.with_winit_window(|ww| match ww.window_handle().ok()?.as_raw() {
+            RawWindowHandle::Win32(h) => Some(HWND(h.hwnd.get() as _)),
+            _ => None,
+        })
+        .flatten()
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = w;
+        Some(PlatformHwnd(1))
+    }
 }
 
 /// Windows "app mode" (Settings > Personalization > Colors).
 fn system_dark() -> bool {
-    use windows::core::w;
-    use windows::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_DWORD};
-    let mut v = 1u32;
-    let mut n = 4u32;
-    unsafe {
-        let _ = RegGetValueW(
-            HKEY_CURRENT_USER,
-            w!("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
-            w!("AppsUseLightTheme"),
-            RRF_RT_REG_DWORD,
-            None,
-            Some(&mut v as *mut _ as _),
-            Some(&mut n),
-        );
+    #[cfg(windows)]
+    {
+        use windows::core::w;
+        use windows::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_DWORD};
+        let mut v = 1u32;
+        let mut n = 4u32;
+        unsafe {
+            let _ = RegGetValueW(
+                HKEY_CURRENT_USER,
+                w!("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
+                w!("AppsUseLightTheme"),
+                RRF_RT_REG_DWORD,
+                None,
+                Some(&mut v as *mut _ as _),
+                Some(&mut n),
+            );
+        }
+        v == 0
     }
-    v == 0
+    #[cfg(not(windows))]
+    {
+        true
+    }
 }
 
 fn apply_look(ui: &AppWindow) {
@@ -959,27 +1012,35 @@ fn effective_rotation(p: &Prefs, shown: (u32, u32), device_rotation: u32) -> u32
 
 /// Logical work area of the monitor the window is on.
 fn work_area(ui: &AppWindow) -> Option<(f32, f32, f32, f32)> {
-    use windows::Win32::Graphics::Gdi::{
-        GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
-    };
-    let h = hwnd_of(ui.window())?;
-    let sf = ui.window().scale_factor();
-    unsafe {
-        let m = MonitorFromWindow(h, MONITOR_DEFAULTTONEAREST);
-        let mut mi = MONITORINFO {
-            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
-            ..Default::default()
+    #[cfg(windows)]
+    {
+        use windows::Win32::Graphics::Gdi::{
+            GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
         };
-        if !GetMonitorInfoW(m, &mut mi).as_bool() {
-            return None;
+        let h = hwnd_of(ui.window())?;
+        let sf = ui.window().scale_factor();
+        unsafe {
+            let m = MonitorFromWindow(h, MONITOR_DEFAULTTONEAREST);
+            let mut mi = MONITORINFO {
+                cbSize: std::mem::size_of::<MONITORINFO>() as u32,
+                ..Default::default()
+            };
+            if !GetMonitorInfoW(m, &mut mi).as_bool() {
+                return None;
+            }
+            let r = mi.rcWork;
+            Some((
+                r.left as f32 / sf,
+                r.top as f32 / sf,
+                (r.right - r.left) as f32 / sf,
+                (r.bottom - r.top) as f32 / sf,
+            ))
         }
-        let r = mi.rcWork;
-        Some((
-            r.left as f32 / sf,
-            r.top as f32 / sf,
-            (r.right - r.left) as f32 / sf,
-            (r.bottom - r.top) as f32 / sf,
-        ))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = ui;
+        None
     }
 }
 
@@ -1357,17 +1418,25 @@ fn keep_on_screen(ui: &AppWindow, (wx, wy, ww, wh): (f32, f32, f32, f32), size: 
 /// uses (checked against segmdl2.ttf 1.86). Without this, Windows 10 drew
 /// every icon as an empty box (B-12).
 fn icon_font() -> &'static str {
-    // Test hook: ZL_ICON_FONT=mdl2 shows the Windows 10 icons on Windows 11.
-    if std::env::var("ZL_ICON_FONT").as_deref() == Ok("mdl2") {
-        return pick_icon_font(false);
+    #[cfg(windows)]
+    {
+        // Test hook: ZL_ICON_FONT=mdl2 shows the Windows 10 icons on Windows 11.
+        if std::env::var("ZL_ICON_FONT").as_deref() == Ok("mdl2") {
+            return pick_icon_font(false);
+        }
+        let fonts = std::env::var_os("WINDIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|| r"C:\Windows".into())
+            .join("Fonts");
+        pick_icon_font(fonts.join("SegoeIcons.ttf").exists())
     }
-    let fonts = std::env::var_os("WINDIR")
-        .map(std::path::PathBuf::from)
-        .unwrap_or_else(|| r"C:\Windows".into())
-        .join("Fonts");
-    pick_icon_font(fonts.join("SegoeIcons.ttf").exists())
+    #[cfg(not(windows))]
+    {
+        "Segoe Fluent Icons"
+    }
 }
 
+#[cfg(windows)]
 fn pick_icon_font(has_fluent: bool) -> &'static str {
     if has_fluent {
         "Segoe Fluent Icons"
@@ -1931,60 +2000,75 @@ fn copy_screen_text(ui: &AppWindow) {
 
 /// Puts `text` on the Windows clipboard. False when the clipboard is busy.
 fn set_pc_clipboard_text(text: &str) -> bool {
-    use windows::Win32::Foundation::HANDLE;
-    use windows::Win32::System::DataExchange::{
-        CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
-    };
-    use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
-    const CF_UNICODETEXT: u32 = 13;
-    let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
-    unsafe {
-        if OpenClipboard(None).is_err() {
-            return false;
-        }
-        let ok = (|| {
-            EmptyClipboard().ok()?;
-            let g = GlobalAlloc(GMEM_MOVEABLE, wide.len() * 2).ok()?;
-            let p = GlobalLock(g) as *mut u16;
-            if p.is_null() {
-                return None;
+    #[cfg(windows)]
+    {
+        use windows::Win32::Foundation::HANDLE;
+        use windows::Win32::System::DataExchange::{
+            CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
+        };
+        use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
+        const CF_UNICODETEXT: u32 = 13;
+        let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
+        unsafe {
+            if OpenClipboard(None).is_err() {
+                return false;
             }
-            std::ptr::copy_nonoverlapping(wide.as_ptr(), p, wide.len());
-            let _ = GlobalUnlock(g);
-            // The clipboard owns the memory after this.
-            SetClipboardData(CF_UNICODETEXT, Some(HANDLE(g.0))).ok()?;
-            Some(())
-        })()
-        .is_some();
-        let _ = CloseClipboard();
-        ok
+            let ok = (|| {
+                EmptyClipboard().ok()?;
+                let g = GlobalAlloc(GMEM_MOVEABLE, wide.len() * 2).ok()?;
+                let p = GlobalLock(g) as *mut u16;
+                if p.is_null() {
+                    return None;
+                }
+                std::ptr::copy_nonoverlapping(wide.as_ptr(), p, wide.len());
+                let _ = GlobalUnlock(g);
+                // The clipboard owns the memory after this.
+                SetClipboardData(CF_UNICODETEXT, Some(HANDLE(g.0))).ok()?;
+                Some(())
+            })()
+            .is_some();
+            let _ = CloseClipboard();
+            ok
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = text;
+        true
     }
 }
 
 /// Text on the Windows clipboard (Ctrl+V to Android), `None` without text.
 fn pc_clipboard_text() -> Option<String> {
-    use windows::Win32::Foundation::HGLOBAL;
-    use windows::Win32::System::DataExchange::{CloseClipboard, GetClipboardData, OpenClipboard};
-    use windows::Win32::System::Memory::{GlobalLock, GlobalUnlock};
-    const CF_UNICODETEXT: u32 = 13;
-    unsafe {
-        OpenClipboard(None).ok()?;
-        let text = GetClipboardData(CF_UNICODETEXT).ok().and_then(|h| {
-            let g = HGLOBAL(h.0);
-            let p = GlobalLock(g) as *const u16;
-            if p.is_null() {
-                return None;
-            }
-            let mut n = 0;
-            while *p.add(n) != 0 {
-                n += 1;
-            }
-            let s = String::from_utf16_lossy(std::slice::from_raw_parts(p, n));
-            let _ = GlobalUnlock(g);
-            Some(s)
-        });
-        let _ = CloseClipboard();
-        text.filter(|s| !s.is_empty())
+    #[cfg(windows)]
+    {
+        use windows::Win32::Foundation::HGLOBAL;
+        use windows::Win32::System::DataExchange::{CloseClipboard, GetClipboardData, OpenClipboard};
+        use windows::Win32::System::Memory::{GlobalLock, GlobalUnlock};
+        const CF_UNICODETEXT: u32 = 13;
+        unsafe {
+            OpenClipboard(None).ok()?;
+            let text = GetClipboardData(CF_UNICODETEXT).ok().and_then(|h| {
+                let g = HGLOBAL(h.0);
+                let p = GlobalLock(g) as *const u16;
+                if p.is_null() {
+                    return None;
+                }
+                let mut n = 0;
+                while *p.add(n) != 0 {
+                    n += 1;
+                }
+                let s = String::from_utf16_lossy(std::slice::from_raw_parts(p, n));
+                let _ = GlobalUnlock(g);
+                Some(s)
+            });
+            let _ = CloseClipboard();
+            text.filter(|s| !s.is_empty())
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        None
     }
 }
 
@@ -3080,38 +3164,54 @@ fn tray_labels(p: &Prefs) -> (String, String) {
 /// "Close to the tray": hide the window, keep the session (sound keeps
 /// playing; Stop or Quit from the tray ends it).
 fn hide_to_tray(ui: &AppWindow) {
-    use windows::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_HIDE};
-    if let Some(h) = hwnd_of(ui.window()) {
-        // A one-off "Minimize to tray" from the close dialog needs the icon too.
-        let p = ui.get_prefs();
-        let (open, quit) = tray_labels(&p);
-        tray::set_icon(true, &open, &quit);
-        let _ = unsafe { ShowWindow(h, SW_HIDE) };
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_HIDE};
+        if let Some(h) = hwnd_of(ui.window()) {
+            // A one-off "Minimize to tray" from the close dialog needs the icon too.
+            let p = ui.get_prefs();
+            let (open, quit) = tray_labels(&p);
+            tray::set_icon(true, &open, &quit);
+            let _ = unsafe { ShowWindow(h, SW_HIDE) };
+            tray::HIDDEN.store(true, Relaxed);
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = ui.hide();
         tray::HIDDEN.store(true, Relaxed);
     }
 }
 
 /// Brings the window back (from the tray, minimised or behind others).
 fn show_window(ui: &AppWindow) {
-    use windows::Win32::UI::WindowsAndMessaging::{
-        IsIconic, SetForegroundWindow, ShowWindow, SW_RESTORE, SW_SHOW,
-    };
-    if let Some(h) = hwnd_of(ui.window()) {
-        unsafe {
-            let _ = ShowWindow(
-                h,
-                if IsIconic(h).as_bool() {
-                    SW_RESTORE
-                } else {
-                    SW_SHOW
-                },
-            );
-            let _ = SetForegroundWindow(h);
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{
+            IsIconic, SetForegroundWindow, ShowWindow, SW_RESTORE, SW_SHOW,
+        };
+        if let Some(h) = hwnd_of(ui.window()) {
+            unsafe {
+                let _ = ShowWindow(
+                    h,
+                    if IsIconic(h).as_bool() {
+                        SW_RESTORE
+                    } else {
+                        SW_SHOW
+                    },
+                );
+                let _ = SetForegroundWindow(h);
+            }
+            tray::HIDDEN.store(false, Relaxed);
+            let p = ui.get_prefs();
+            let (open, quit) = tray_labels(&p);
+            tray::set_icon(p.close_action == "tray", &open, &quit);
         }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = ui.show();
         tray::HIDDEN.store(false, Relaxed);
-        let p = ui.get_prefs();
-        let (open, quit) = tray_labels(&p);
-        tray::set_icon(p.close_action == "tray", &open, &quit);
     }
 }
 
@@ -3331,10 +3431,19 @@ fn main() -> Result<(), slint::PlatformError> {
         .backend_name("winit".into())
         .renderer_name("femtovg".into())
         .with_winit_window_attributes_hook(|attrs| {
-            attrs
-                .with_transparent(true)
-                .with_decorations(false)
-                .with_system_backdrop(BackdropType::None)
+            #[cfg(windows)]
+            {
+                attrs
+                    .with_transparent(true)
+                    .with_decorations(false)
+                    .with_system_backdrop(BackdropType::None)
+            }
+            #[cfg(not(windows))]
+            {
+                attrs
+                    .with_transparent(false)
+                    .with_decorations(false)
+            }
         })
         .select()?;
 
@@ -4477,6 +4586,91 @@ fn main() -> Result<(), slint::PlatformError> {
             true
         });
     }
+    {
+        let weak = ui.as_weak();
+        ui.on_stage_action(move |action, mouse_x, mouse_y| {
+            let Some(ui) = weak.upgrade() else { return };
+            let (u, v) = APP.with_borrow(|a| {
+                let Some(v) = a.view.as_ref() else { return (0.0, 0.0) };
+                let pic = v.shown_size();
+                let (sw, sh) = (ui.get_stage_w(), ui.get_stage_h());
+                if pic.0 == 0 || pic.1 == 0 || sw <= 0.0 || sh <= 0.0 {
+                    return (0.0, 0.0);
+                }
+                let p = ui.get_prefs();
+                if p.fit == "fill" {
+                    return (mouse_x / sw, mouse_y / sh);
+                }
+                let aspect = pic.0 as f32 / pic.1 as f32;
+                let (pw, ph) = if sw / sh > aspect {
+                    (sh * aspect, sh)
+                } else {
+                    (sw, sw / aspect)
+                };
+                let ox = (sw - pw) / 2.0;
+                let oy = (sh - ph) / 2.0;
+                let u = (mouse_x - ox) / pw;
+                let v = (mouse_y - oy) / ph;
+                (u, v)
+            });
+
+            let event = match action.as_str() {
+                "down" => {
+                    if !(0.0..=1.0).contains(&u) || !(0.0..=1.0).contains(&v) {
+                        return;
+                    }
+                    PointerEvent::Down(u, v)
+                }
+                "move" => PointerEvent::Move(u.clamp(0.0, 1.0), v.clamp(0.0, 1.0)),
+                "up" => PointerEvent::Up(u.clamp(0.0, 1.0), v.clamp(0.0, 1.0)),
+                "back" => PointerEvent::Back,
+                "middle" => PointerEvent::Middle,
+                _ => return,
+            };
+
+            APP.with_borrow(|a| {
+                if let Some(view) = a.view.as_ref() {
+                    view.send_pointer(event);
+                }
+            });
+        });
+    }
+    {
+        let weak = ui.as_weak();
+        ui.on_stage_scroll(move |mouse_x, mouse_y, delta_y| {
+            let Some(ui) = weak.upgrade() else { return };
+            let (u, v) = APP.with_borrow(|a| {
+                let Some(view) = a.view.as_ref() else { return (0.0, 0.0) };
+                let pic = view.shown_size();
+                let (sw, sh) = (ui.get_stage_w(), ui.get_stage_h());
+                if pic.0 == 0 || pic.1 == 0 || sw <= 0.0 || sh <= 0.0 {
+                    return (0.0, 0.0);
+                }
+                let p = ui.get_prefs();
+                if p.fit == "fill" {
+                    return (mouse_x / sw, mouse_y / sh);
+                }
+                let aspect = pic.0 as f32 / pic.1 as f32;
+                let (pw, ph) = if sw / sh > aspect {
+                    (sh * aspect, sh)
+                } else {
+                    (sw, sw / aspect)
+                };
+                let ox = (sw - pw) / 2.0;
+                let oy = (sh - ph) / 2.0;
+                let u = (mouse_x - ox) / pw;
+                let v = (mouse_y - oy) / ph;
+                (u, v)
+            });
+
+            let d = delta_y / 120.0;
+            APP.with_borrow(|a| {
+                if let Some(view) = a.view.as_ref() {
+                    view.send_pointer(PointerEvent::Wheel(u.clamp(0.0, 1.0), v.clamp(0.0, 1.0), d));
+                }
+            });
+        });
+    }
 
     // Frame timer: native view placement, window fitting, stats.
     let timer = slint::Timer::default();
@@ -4494,6 +4688,23 @@ fn main() -> Result<(), slint::PlatformError> {
         timer.start(slint::TimerMode::Repeated, Duration::from_millis(16), move || {
             let _tick = perf::Tick::new();
             let Some(ui) = weak.upgrade() else { return };
+            #[cfg(target_os = "linux")]
+            {
+                let frame = APP.with_borrow_mut(|a| {
+                    if let Some(v) = a.view.as_ref() {
+                        if let Some((seq, w, h, buf)) = v.poll_frame(a.last_frame_seq) {
+                            a.last_frame_seq = seq;
+                            return Some((w, h, buf));
+                        }
+                    }
+                    None
+                });
+                if let Some((w, h, buf)) = frame {
+                    let mut pixel_buf = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(w, h);
+                    pixel_buf.make_mut_bytes().copy_from_slice(&buf);
+                    ui.set_video_frame(slint::Image::from_rgba8(pixel_buf));
+                }
+            }
             // The first tick sizes the window for the screen; the settings
             // slide below waits a tick, else it would resize with the old
             // height (seen: the window stayed 900 px high).

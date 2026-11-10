@@ -38,50 +38,59 @@ fn lang_from(tags: &[String], have: &[String]) -> String {
         .unwrap_or_else(|| "en".into())
 }
 
-/// Language tags from HKCU\Control Panel\International: the user's
-/// language list ("User Profile\Languages") and the regional format.
+/// Language tags from OS.
 fn windows_languages() -> Vec<String> {
-    use windows::core::w;
-    use windows::Win32::System::Registry::{
-        RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_MULTI_SZ, RRF_RT_REG_SZ,
-    };
-
-    let mut out = Vec::new();
-    for (key, value, kind) in [
-        (
-            w!(r"Control Panel\International\User Profile"),
-            w!("Languages"),
-            RRF_RT_REG_MULTI_SZ,
-        ),
-        (
-            w!(r"Control Panel\International"),
-            w!("LocaleName"),
-            RRF_RT_REG_SZ,
-        ),
-    ] {
-        let mut buf = vec![0u16; 2048];
-        let mut size = (buf.len() * 2) as u32;
-        let ok = unsafe {
-            RegGetValueW(
-                HKEY_CURRENT_USER,
-                key,
-                value,
-                kind,
-                None,
-                Some(buf.as_mut_ptr().cast()),
-                Some(&mut size),
-            )
+    #[cfg(windows)]
+    {
+        use windows::core::w;
+        use windows::Win32::System::Registry::{
+            RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_MULTI_SZ, RRF_RT_REG_SZ,
         };
-        if ok.is_ok() {
-            buf.truncate(size as usize / 2);
-            out.extend(
-                buf.split(|&c| c == 0)
-                    .filter(|s| !s.is_empty())
-                    .map(String::from_utf16_lossy),
-            );
+
+        let mut out = Vec::new();
+        for (key, value, kind) in [
+            (
+                w!(r"Control Panel\International\User Profile"),
+                w!("Languages"),
+                RRF_RT_REG_MULTI_SZ,
+            ),
+            (
+                w!(r"Control Panel\International"),
+                w!("LocaleName"),
+                RRF_RT_REG_SZ,
+            ),
+        ] {
+            let mut buf = vec![0u16; 2048];
+            let mut size = (buf.len() * 2) as u32;
+            let ok = unsafe {
+                RegGetValueW(
+                    HKEY_CURRENT_USER,
+                    key,
+                    value,
+                    kind,
+                    None,
+                    Some(buf.as_mut_ptr().cast()),
+                    Some(&mut size),
+                )
+            };
+            if ok.is_ok() {
+                buf.truncate(size as usize / 2);
+                out.extend(
+                    buf.split(|&c| c == 0)
+                        .filter(|s| !s.is_empty())
+                        .map(String::from_utf16_lossy),
+                );
+            }
         }
+        out
     }
-    out
+    #[cfg(not(windows))]
+    {
+        std::env::var("LANG")
+            .ok()
+            .map(|l| vec![l.split('.').next().unwrap_or("en").replace('_', "-")])
+            .unwrap_or_default()
+    }
 }
 
 /// Glass thickness slider (0..100) to (glass on, thickness 0..1 for the
