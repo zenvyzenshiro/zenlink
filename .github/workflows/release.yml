@@ -1,0 +1,120 @@
+# Builds the release files from source on GitHub (needed for SignPath Foundation code signing):
+# FFmpeg + zlaac.dll and playfair.dll from source, then build_portable_release.ps1.
+# Signing runs only when the SIGNPATH_* variables and the SIGNPATH_API_TOKEN secret are set:
+# first the native DLLs (Portable.exe unpacks and loads them), then the exe that embeds them.
+name: Release build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    env:
+      SIGN: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: false
+          install: make diffutils mingw-w64-ucrt-x86_64-gcc
+
+      - name: Build FFmpeg 9.0.2 and zlaac.dll
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          VER=$(sed -n 's/^version *= *"\(.*\)"/\1/p' Cargo.toml | head -1)
+          curl -fsSLo ffmpeg.tar.xz https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+          echo "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e  ffmpeg.tar.xz" | sha256sum -c -
+          mkdir -p ../ff/src
+          tar -xJf ffmpeg.tar.xz -C ../ff/src --strip-components=1
+          rm ffmpeg.tar.xz
+          bash ZenshiroDev/resources/windows/native/zlaac/build_ffmpeg.sh "$(realpath ../ff/src)" "$(realpath ../ff)/build" "$(realpath ../ff)/prefix"
+          bash ZenshiroDev/resources/windows/native/zlaac/build_zlaac.sh "$(realpath ../ff)/prefix" ZenshiroDev/resources/windows/native/zlaac "$VER"
+
+      - name: Build playfair.dll
+        shell: cmd
+        run: call ZenshiroDev\resources\windows\native\playfair\build.bat
+
+      - name: Collect native DLLs
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out\native | Out-Null
+          Copy-Item ZenshiroDev\resources\windows\native\zlaac\zlaac.dll, ZenshiroDev\resources\windows\native\playfair\playfair.dll out\native
+
+      - id: native
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-unsigned
+          path: out/native/*.dll
+
+      - name: Sign native DLLs
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: native
+          github-artifact-id: ${{ steps.native.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: out/native-signed
+
+      - name: Use signed DLLs
+        if: env.SIGN == 'true'
+        shell: pwsh
+        run: |
+          Copy-Item out\native-signed\zlaac.dll ZenshiroDev\resources\windows\native\zlaac\zlaac.dll -Force
+          Copy-Item out\native-signed\playfair.dll ZenshiroDev\resources\windows\native\playfair\playfair.dll -Force
+
+      - name: Install Rust 1.95.0
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal
+          rustup default 1.95.0
+
+      - name: Build release files
+        shell: pwsh
+        run: ./build_portable_release.ps1
+
+      - id: exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-unsigned
+          path: out/release/*-Portable.exe
+
+      - name: Sign ZenLink.exe
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: exe
+          github-artifact-id: ${{ steps.exe.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: out/exe-signed
+
+      - name: Use signed exe for Portable and Setup
+        if: env.SIGN == 'true'
+        shell: pwsh
+        run: |
+          $signed = Get-ChildItem out\exe-signed\*-Portable.exe
+          Copy-Item $signed.FullName out\release\ -Force
+          Copy-Item $signed.FullName (Join-Path out\release ($signed.Name -replace '-Portable', '-Setup')) -Force
+
+      - name: SHA-256 of the release files
+        shell: pwsh
+        run: Get-FileHash out\release\* | Format-Table Hash, Path -AutoSize
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: out/release/*
