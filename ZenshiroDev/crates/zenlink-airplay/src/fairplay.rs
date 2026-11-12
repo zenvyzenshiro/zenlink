@@ -15,25 +15,25 @@ const FP_HEADER: &str = "46504c590301040000000014";
 
 type Decrypt = unsafe extern "C" fn(*const u8, *const u8, *mut u8);
 
-static DLL: OnceLock<Result<(libloading::Library, Decrypt), String>> = OnceLock::new();
+static DLL: OnceLock<(libloading::Library, Decrypt)> = OnceLock::new();
 
-/// Loads playfair.dll once (the first path wins; later calls keep it).
+/// Loads playfair.dll once (the first path that loads wins; a failure is tried again
+/// next time, for example after antivirus let the file go).
 pub fn load(dll: &Path) -> Result<(), String> {
-    DLL.get_or_init(|| {
-        // SAFETY: playfair.dll is ZenLink's own build of the bundled playfair sources;
-        // zl_playfair_decrypt(keymsg[164], ekey[72], out[16]) has no other side effects.
-        unsafe {
-            let lib =
-                libloading::Library::new(dll).map_err(|e| format!("{}: {e}", dll.display()))?;
-            let f: Decrypt = *lib
-                .get::<Decrypt>(b"zl_playfair_decrypt\0")
-                .map_err(|e| e.to_string())?;
-            Ok((lib, f))
-        }
-    })
-    .as_ref()
-    .map(|_| ())
-    .map_err(Clone::clone)
+    if DLL.get().is_some() {
+        return Ok(());
+    }
+    // SAFETY: playfair.dll is ZenLink's own build of the bundled playfair sources;
+    // zl_playfair_decrypt(keymsg[164], ekey[72], out[16]) has no other side effects.
+    let loaded = unsafe {
+        let lib = libloading::Library::new(dll).map_err(|e| format!("{}: {e}", dll.display()))?;
+        let f: Decrypt = *lib
+            .get::<Decrypt>(b"zl_playfair_decrypt\0")
+            .map_err(|e| e.to_string())?;
+        (lib, f)
+    };
+    let _ = DLL.set(loaded);
+    Ok(())
 }
 
 #[derive(Default)]
@@ -71,11 +71,7 @@ impl FairPlay {
         if ekey.len() != 72 {
             return Err("FairPlay key is not 72 bytes".into());
         }
-        let (_, f) = DLL
-            .get()
-            .ok_or("playfair.dll not loaded")?
-            .as_ref()
-            .map_err(Clone::clone)?;
+        let (_, f) = DLL.get().ok_or("playfair.dll not loaded")?;
         let mut out = [0u8; 16];
         // SAFETY: keymsg is 164 bytes, ekey 72, out 16, as the function expects.
         unsafe { f(keymsg.as_ptr(), ekey.as_ptr(), out.as_mut_ptr()) };

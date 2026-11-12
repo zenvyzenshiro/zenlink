@@ -689,6 +689,8 @@ impl DeviceSource {
 
     fn fail(&mut self, e: String) {
         log::warn!("android: {e}");
+        // A replugged phone gets a new transport id: retry by serial.
+        self.transport_id = None;
         // Bounded fallback (master prompt section 5): the next attempt of
         // the plan, e.g. another hardware encoder, then H.264 with the
         // server's default encoder. The user's preference is kept for the

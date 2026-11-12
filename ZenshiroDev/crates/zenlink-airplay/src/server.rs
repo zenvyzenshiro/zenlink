@@ -105,7 +105,16 @@ impl Server {
         };
         let me = inner.clone();
         let accept = tokio::spawn(async move {
-            while let Ok((s, peer)) = listener.accept().await {
+            loop {
+                // A failed accept (out of handles, a reset) must not end the receiver.
+                let (s, peer) = match listener.accept().await {
+                    Ok(v) => v,
+                    Err(e) => {
+                        log::warn!("airplay: accept failed: {e}");
+                        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+                        continue;
+                    }
+                };
                 let me2 = me.clone();
                 let ip = peer.ip().to_string();
                 let task = tokio::spawn(async move { me2.rtsp(s, peer).await });
@@ -441,7 +450,15 @@ impl Inner {
         let streams = Arc::downgrade(self);
         let task = tokio::spawn(async move {
             let mut n = 0;
-            while let Ok((s, peer)) = listener.accept().await {
+            loop {
+                let (s, peer) = match listener.accept().await {
+                    Ok(v) => v,
+                    Err(e) => {
+                        log::warn!("airplay: video accept failed: {e}");
+                        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+                        continue;
+                    }
+                };
                 n += 1;
                 log::info!("airplay: video connection #{n} from {peer}");
                 zenlink_core::quick_ack(&s);

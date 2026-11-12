@@ -112,7 +112,12 @@ pub fn kind() -> Kind {
     };
     let dir = exe.parent().unwrap_or(Path::new("."));
     if cfg!(feature = "portable") {
-        Kind::Portable
+        // Since v2.5.14 Setup installs this same exe: the installed copy updates through Setup.
+        if crate::install::is_installed_copy() {
+            Kind::Installed
+        } else {
+            Kind::Portable
+        }
     } else if dir.join("unins000.exe").exists() {
         Kind::Installed
     } else {

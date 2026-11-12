@@ -25,7 +25,7 @@ fn lockdown_dir() -> PathBuf {
 /// `<udid>.plist`, dashed after 8 characters for the 24-character UDIDs of newer devices.
 pub fn pair_record_path(udid: &str) -> PathBuf {
     let udid = udid.trim_matches('\0');
-    let name = if udid.len() == 24 && !udid.contains('-') {
+    let name = if udid.len() == 24 && udid.is_ascii() && !udid.contains('-') {
         format!("{}-{}", &udid[..8], &udid[8..])
     } else {
         udid.to_string()

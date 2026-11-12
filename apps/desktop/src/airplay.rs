@@ -134,8 +134,14 @@ impl Sink for Feed {
             g.gop.clear();
             g.key_in_gop = true;
         }
-        if g.key_in_gop && g.gop.len() < GOP_CAP {
-            g.gop.push(data.clone());
+        if g.key_in_gop {
+            if g.gop.len() < GOP_CAP {
+                g.gop.push(data.clone());
+            } else {
+                // A cut GOP would replay as a frozen picture: wait for the next key frame.
+                g.gop.clear();
+                g.key_in_gop = false;
+            }
         }
         if let Some(tx) = &g.tx {
             // A full queue means the decoder fell behind: drop the session, it reopens from the GOP.

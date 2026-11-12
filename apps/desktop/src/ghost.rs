@@ -11,9 +11,10 @@ use windows::Win32::Foundation::{COLORREF, HWND, LPARAM, WPARAM};
 use windows::Win32::System::Threading::GetCurrentThreadId;
 use windows::Win32::UI::Input::KeyboardAndMouse::{RegisterHotKey, UnregisterHotKey, MOD_NOREPEAT};
 use windows::Win32::UI::WindowsAndMessaging::{
-    GetMessageW, GetWindowLongPtrW, PostThreadMessageW, SetLayeredWindowAttributes,
+    GetMessageW, GetWindowLongPtrW, PeekMessageW, PostThreadMessageW, SetLayeredWindowAttributes,
     SetWindowLongPtrW, SetWindowPos, GWL_EXSTYLE, HWND_NOTOPMOST, HWND_TOPMOST, LWA_ALPHA, MSG,
-    SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, WM_HOTKEY, WM_QUIT, WS_EX_LAYERED, WS_EX_TRANSPARENT,
+    PM_NOREMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, WM_HOTKEY, WM_QUIT, WS_EX_LAYERED,
+    WS_EX_TRANSPARENT,
 };
 
 /// The keys Settings offers (F11 is full screen, F10 opens window menus).
@@ -69,23 +70,31 @@ pub fn enter(hwnd: HWND, key: &str, opacity: f32, off: impl Fn() + Send + 'stati
         );
     }
     let vk = 0x6F + n; // VK_F1 = 0x70
-    std::thread::Builder::new()
+    let (ready_tx, ready) = std::sync::mpsc::channel();
+    let spawned = std::thread::Builder::new()
         .name("ghost-hotkey".into())
         .spawn(move || unsafe {
-            HOTKEY_THREAD.store(GetCurrentThreadId(), Relaxed);
+            let mut msg = MSG::default();
+            // Creates this thread's message queue before `leave` can post WM_QUIT to it.
+            let _ = PeekMessageW(&mut msg, None, 0, 0, PM_NOREMOVE);
             if let Err(e) = RegisterHotKey(None, 1, MOD_NOREPEAT, vk) {
                 // Another app owns the key: the tray still leaves Ghost mode.
                 log::warn!("ghost: F{n} is taken by another app ({e})");
             }
-            let mut msg = MSG::default();
+            let _ = ready_tx.send(GetCurrentThreadId());
             while GetMessageW(&mut msg, None, 0, 0).as_bool() {
                 if msg.message == WM_HOTKEY {
                     off();
                 }
             }
             let _ = UnregisterHotKey(None, 1);
-        })
-        .ok();
+        });
+    // Known before `enter` returns, so a quick `leave` always reaches the thread.
+    if spawned.is_ok() {
+        if let Ok(id) = ready.recv_timeout(std::time::Duration::from_secs(1)) {
+            HOTKEY_THREAD.store(id, Relaxed);
+        }
+    }
     log::info!("ghost: on (F{n}, {alpha}/255)");
 }
 

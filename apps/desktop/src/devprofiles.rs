@@ -32,9 +32,9 @@ pub fn load() -> Store {
 
 pub fn save(s: &Store) {
     if let Some(f) = path() {
-        let _ = std::fs::write(
-            f,
-            serde_json::to_vec_pretty(&to_value(s)).unwrap_or_default(),
+        crate::prefs::write_atomic(
+            &f,
+            &serde_json::to_vec_pretty(&to_value(s)).unwrap_or_default(),
         );
     }
 }

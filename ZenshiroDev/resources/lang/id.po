@@ -1625,665 +1625,689 @@ msgstr "Terkirim:"
 msgid "Cancelled."
 msgstr "Dibatalkan."
 
-#: apps/desktop/src/filewin.rs:533
+#: apps/desktop/src/filewin.rs:559
 msgid "Deleted."
 msgstr "Terhapus."
 
-#: apps/desktop/src/filewin.rs:540
+#: apps/desktop/src/filewin.rs:566
 msgid "That folder name cannot be used."
 msgstr "Nama folder tidak bisa dipakai."
 
-#: apps/desktop/src/main.rs:465
+#: apps/desktop/src/install.rs:192
+msgid "ZenLink is still running. Quit it (tray icon > Quit), then click Retry."
+msgstr "ZenLink masih berjalan. Tutup dulu (ikon tray > Keluar), lalu klik Coba Lagi (Retry)."
+
+#: apps/desktop/src/install.rs:196
+msgid "ZenLink is still running, so it was not changed."
+msgstr "ZenLink masih berjalan, jadi tidak diubah."
+
+#: apps/desktop/src/install.rs:225
+msgid "Administrator permission was not given. Nothing was changed."
+msgstr "Izin administrator tidak diberikan. Tidak ada yang diubah."
+
+#: apps/desktop/src/install.rs:390
+msgid "Install ZenLink {v} on this PC?\n\nFolder: {dir}\nZenLink is added to the Start menu and the desktop."
+msgstr "Pasang ZenLink {v} di PC ini?\n\nFolder: {dir}\nZenLink ditambahkan ke menu Start dan desktop."
+
+#: apps/desktop/src/install.rs:396
+msgid "Update ZenLink to {v}?\n\nFolder: {dir}\nYour settings are kept."
+msgstr "Perbarui ZenLink ke {v}?\n\nFolder: {dir}\nPengaturan Anda tetap tersimpan."
+
+#: apps/desktop/src/install.rs:479
+msgid "Remove ZenLink from this PC?\n\nIts logs and downloaded tools are removed too; your settings stay."
+msgstr "Hapus ZenLink dari PC ini?\n\nLog dan alat yang diunduh ikut dihapus; pengaturan Anda tetap ada."
+
+#: apps/desktop/src/install.rs:495
+msgid "ZenLink was removed."
+msgstr "ZenLink sudah dihapus."
+
+#: apps/desktop/src/main.rs:466
 msgid "Passcode saved (encrypted on this PC)"
 msgstr "Kode tersimpan (terenkripsi di PC ini)"
 
-#: apps/desktop/src/main.rs:467
+#: apps/desktop/src/main.rs:468
 msgid "Passcode removed"
 msgstr "Kode dihapus"
 
-#: apps/desktop/src/main.rs:472
+#: apps/desktop/src/main.rs:473
 msgid "Couldn't save the passcode"
 msgstr "Gagal menyimpan kode"
 
-#: apps/desktop/src/main.rs:527
+#: apps/desktop/src/main.rs:528
 msgid "Wi-Fi setup failed: {reason}"
 msgstr "Wi-Fi gagal disiapkan: {reason}"
 
-#: apps/desktop/src/main.rs:556
+#: apps/desktop/src/main.rs:557
 msgid "ready"
 msgstr "siap"
 
-#: apps/desktop/src/main.rs:557
+#: apps/desktop/src/main.rs:558
 msgid "unlock + Trust"
 msgstr "buka kunci + Percayai"
 
-#: apps/desktop/src/main.rs:559
+#: apps/desktop/src/main.rs:560
 msgid "choose a mode"
 msgstr "pilih mode"
 
-#: apps/desktop/src/main.rs:560
+#: apps/desktop/src/main.rs:561
 msgid "ZenLink Studio driver"
 msgstr "driver ZenLink Studio"
 
-#: apps/desktop/src/main.rs:561
+#: apps/desktop/src/main.rs:562
 msgid "needs a driver"
 msgstr "perlu driver"
 
-#: apps/desktop/src/main.rs:602
+#: apps/desktop/src/main.rs:603
 msgid "not seen on Wi-Fi"
 msgstr "tidak terlihat di Wi-Fi"
 
-#: apps/desktop/src/main.rs:604
+#: apps/desktop/src/main.rs:605
 msgid "not connected"
 msgstr "tidak tersambung"
 
-#: apps/desktop/src/main.rs:607
+#: apps/desktop/src/main.rs:608
 msgid "Saved · {where_}"
 msgstr "Tersimpan · {where_}"
 
-#: apps/desktop/src/main.rs:609
+#: apps/desktop/src/main.rs:610
 msgid "{model} · saved · {where_}"
 msgstr "{model} · tersimpan · {where_}"
 
-#: apps/desktop/src/main.rs:721
+#: apps/desktop/src/main.rs:722
 msgid "Apple Driver (Standard)"
 msgstr "Apple Driver (Standar)"
 
-#: apps/desktop/src/main.rs:723
+#: apps/desktop/src/main.rs:724
 msgid "Not chosen yet"
 msgstr "Belum dipilih"
 
-#: apps/desktop/src/main.rs:791
+#: apps/desktop/src/main.rs:792
 msgid "Restart to switch the mode"
 msgstr "Mulai ulang untuk ganti mode"
 
-#: apps/desktop/src/main.rs:792
+#: apps/desktop/src/main.rs:793
 msgid "{name} is used after the ZenLink service restarts. Mirroring that is running stops."
 msgstr "{name} dipakai setelah layanan ZenLink dimulai ulang. Mirroring yang berjalan akan berhenti."
 
-#: apps/desktop/src/main.rs:793
+#: apps/desktop/src/main.rs:794
 msgid "Restart now"
 msgstr "Mulai ulang sekarang"
 
-#: apps/desktop/src/main.rs:794
+#: apps/desktop/src/main.rs:795
 msgid "Later"
 msgstr "Nanti"
 
-#: apps/desktop/src/main.rs:801
+#: apps/desktop/src/main.rs:802
 msgid "{name} after an app restart"
 msgstr "{name} aktif setelah restart app"
 
-#: apps/desktop/src/main.rs:821
+#: apps/desktop/src/main.rs:822
 msgid "running"
 msgstr "berjalan"
 
-#: apps/desktop/src/main.rs:823
+#: apps/desktop/src/main.rs:824
 msgid "not running"
 msgstr "tidak berjalan"
 
-#: apps/desktop/src/main.rs:825
+#: apps/desktop/src/main.rs:826
 msgid "Native audio"
 msgstr "Audio native"
 
-#: apps/desktop/src/main.rs:827
+#: apps/desktop/src/main.rs:828
 msgid "available"
 msgstr "tersedia"
 
-#: apps/desktop/src/main.rs:829
+#: apps/desktop/src/main.rs:830
 msgid "not available"
 msgstr "tidak tersedia"
 
-#: apps/desktop/src/main.rs:934
+#: apps/desktop/src/main.rs:935
 msgid "H.265 (HEVC) decoder missing"
 msgstr "Decoder H.265 (HEVC) tidak ada"
 
-#: apps/desktop/src/main.rs:935
+#: apps/desktop/src/main.rs:936
 msgid "This iPhone/iPad sends its screen as H.265, and this Windows has no HEVC decoder, so the picture stays black. Install the free \"HEVC Video Extensions from Device Manufacturer\" from the Microsoft Store, then press Restart. Or use ZenLink Studio, which sends H.264."
 msgstr "iPhone/iPad ini mengirim layarnya sebagai H.265, dan Windows ini tidak punya decoder HEVC, jadi gambar tetap hitam. Pasang \"HEVC Video Extensions from Device Manufacturer\" (gratis) dari Microsoft Store, lalu tekan Restart. Atau pakai ZenLink Studio, yang mengirim H.264."
 
-#: apps/desktop/src/main.rs:936
+#: apps/desktop/src/main.rs:937
 msgid "Open Microsoft Store"
 msgstr "Buka Microsoft Store"
 
-#: apps/desktop/src/main.rs:1183
+#: apps/desktop/src/main.rs:1204
 msgid "mixed, needs repair"
 msgstr "campuran, perlu diperbaiki"
 
-#: apps/desktop/src/main.rs:1184
+#: apps/desktop/src/main.rs:1205
 msgid "unknown"
 msgstr "tidak dikenal"
 
-#: apps/desktop/src/main.rs:1189
+#: apps/desktop/src/main.rs:1210
 msgid "No iPhone/iPad on USB"
 msgstr "Tidak ada iPhone/iPad di USB"
 
-#: apps/desktop/src/main.rs:1209
+#: apps/desktop/src/main.rs:1230
 msgid "The Media Feature Pack is missing"
 msgstr "Media Feature Pack belum terpasang"
 
-#: apps/desktop/src/main.rs:1210
+#: apps/desktop/src/main.rs:1231
 msgid "This Windows (an N or KN edition) has no Windows video components, so ZenLink cannot show the picture. Add the free \"Media Feature Pack\" from Microsoft: Settings › Apps › Optional features › View features › Media Feature Pack. Then restart the PC."
 msgstr "Windows ini (edisi N atau KN) tidak punya komponen video Windows, jadi ZenLink tidak bisa menampilkan gambar. Pasang \"Media Feature Pack\" dari Microsoft (gratis): Settings › Apps › Optional features › View features › Media Feature Pack. Lalu restart PC."
 
-#: apps/desktop/src/main.rs:1211
+#: apps/desktop/src/main.rs:1232
 msgid "Open Optional features"
 msgstr "Buka Optional features"
 
-#: apps/desktop/src/main.rs:1231
+#: apps/desktop/src/main.rs:1252
 msgid "Stop casting before changing drivers."
 msgstr "Hentikan mirroring dulu sebelum mengganti driver."
 
-#: apps/desktop/src/main.rs:1235
+#: apps/desktop/src/main.rs:1256
 msgid "Connect the device first."
 msgstr "Colokkan perangkat dulu."
 
-#: apps/desktop/src/main.rs:1240
+#: apps/desktop/src/main.rs:1261
 msgid "Restore the Apple driver?"
 msgstr "Kembalikan driver Apple?"
 
-#: apps/desktop/src/main.rs:1241
+#: apps/desktop/src/main.rs:1262
 msgid "Apple Driver mode can see the device again. ZenLink Studio stops until its driver is installed again. A backup is saved first. Windows will ask for administrator permission. Unplug and reconnect the cable afterwards."
 msgstr "Mode Apple Driver bisa melihat perangkat lagi. ZenLink Studio berhenti sampai drivernya dipasang lagi. Cadangan disimpan dulu. Windows akan minta izin administrator. Cabut lalu colok lagi kabelnya setelah selesai."
 
-#: apps/desktop/src/main.rs:1244
+#: apps/desktop/src/main.rs:1265
 msgid "Install the ZenLink Studio driver?"
 msgstr "Pasang driver ZenLink Studio?"
 
-#: apps/desktop/src/main.rs:1245
+#: apps/desktop/src/main.rs:1266
 msgid "Like TikTok LIVE Studio, ZenLink installs the libusb-win32 driver for this device. While it is installed, Apple mode and Apple apps can't see the device; press Restore Apple driver to switch back. If there is no driver package for this model yet, ZenLink builds one and signs it with a new certificate named \"ZenLink ZenLink Studio\", added to Windows' trusted certificates (its private key is deleted). A backup is saved first, and Apple's driver comes back automatically if the device doesn't start. Windows will ask for administrator permission. Unplug and reconnect the cable afterwards."
 msgstr "Seperti TikTok LIVE Studio, ZenLink memasang driver libusb-win32 untuk perangkat ini. Selama terpasang, mode Apple dan aplikasi Apple tidak melihat perangkat; tekan Kembalikan driver Apple untuk balik. Kalau belum ada paket driver untuk model ini, ZenLink membuatnya dan menandatanganinya dengan sertifikat baru bernama \"ZenLink ZenLink Studio\" yang ditambahkan ke sertifikat tepercaya Windows (kunci privatnya dihapus). Cadangan disimpan dulu, dan driver Apple dipasang lagi otomatis kalau perangkat gagal jalan. Windows akan minta izin administrator. Cabut lalu colok lagi kabelnya setelah selesai."
 
-#: apps/desktop/src/main.rs:1248
+#: apps/desktop/src/main.rs:1269
 msgid "Remove the libusb0 filter?"
 msgstr "Hapus filter libusb0?"
 
-#: apps/desktop/src/main.rs:1249
+#: apps/desktop/src/main.rs:1270
 msgid "It is stacked on Apple's driver, which can crash Windows. Apple's driver stays. A backup is saved first. Windows will ask for administrator permission."
 msgstr "Filter ini menumpuk di driver Apple dan bisa membuat Windows crash. Driver Apple tetap ada. Cadangan disimpan dulu. Windows akan minta izin administrator."
 
-#: apps/desktop/src/main.rs:1270
+#: apps/desktop/src/main.rs:1291
 msgid "Changing the device's driver…"
 msgstr "Mengganti driver perangkat…"
 
-#: apps/desktop/src/main.rs:1271
+#: apps/desktop/src/main.rs:1292
 msgid "Approve the Windows permission prompt. A PowerShell window shows each step; keep the cable plugged in until it finishes."
 msgstr "Setujui izin Windows. Jendela PowerShell menampilkan tiap langkah; biarkan kabel tetap tercolok sampai selesai."
 
-#: apps/desktop/src/main.rs:1330
+#: apps/desktop/src/main.rs:1351
 msgid "Driver changed"
 msgstr "Driver sudah diganti"
 
-#: apps/desktop/src/main.rs:1333
+#: apps/desktop/src/main.rs:1354
 msgid "The ZenLink service needs a restart to use {target} mode. Unplug the cable and plug it in again."
 msgstr "Layanan ZenLink perlu dimulai ulang untuk memakai mode {target}. Cabut lalu colok lagi kabelnya."
 
-#: apps/desktop/src/main.rs:1339
+#: apps/desktop/src/main.rs:1360
 msgid "The backend did not answer."
 msgstr "Backend tidak menjawab."
 
-#: apps/desktop/src/main.rs:1344
+#: apps/desktop/src/main.rs:1365
 msgid "The previous state was restored."
 msgstr "Kondisi sebelumnya sudah dipulihkan."
 
-#: apps/desktop/src/main.rs:1351
+#: apps/desktop/src/main.rs:1372
 msgid "Driver not changed"
 msgstr "Driver tidak diubah"
 
-#: apps/desktop/src/main.rs:1591
+#: apps/desktop/src/main.rs:1614
 msgid "adb is not installed yet."
 msgstr "adb belum terpasang."
 
-#: apps/desktop/src/main.rs:1592
+#: apps/desktop/src/main.rs:1615
 msgid "Starting ADB…"
 msgstr "Menyalakan ADB…"
 
-#: apps/desktop/src/main.rs:1594
+#: apps/desktop/src/main.rs:1617
 msgid "ADB did not start. Close other apps that use ADB, then try again."
 msgstr "ADB tidak mau menyala. Tutup aplikasi lain yang memakai ADB, lalu coba lagi."
 
-#: apps/desktop/src/main.rs:1597
+#: apps/desktop/src/main.rs:1620
 msgid "ADB port 5037 is used by another program. ZenLink does not change it."
 msgstr "Port ADB 5037 dipakai program lain. ZenLink tidak mengubahnya."
 
-#: apps/desktop/src/main.rs:1601
+#: apps/desktop/src/main.rs:1624
 msgid "Windows sees a phone on USB, but ADB does not yet. Turn on USB debugging (steps below), then unplug and plug the cable in again."
 msgstr "Windows melihat HP lewat USB, tapi ADB belum. Nyalakan Debugging USB (langkah di bawah), lalu cabut dan colok lagi kabelnya."
 
-#: apps/desktop/src/main.rs:1603
+#: apps/desktop/src/main.rs:1626
 msgid "No Android device yet. Follow the steps below."
 msgstr "Belum ada perangkat Android. Ikuti langkah di bawah."
 
-#: apps/desktop/src/main.rs:1605
+#: apps/desktop/src/main.rs:1628
 msgid "device(s) seen through ADB."
 msgstr "perangkat terlihat lewat ADB."
 
-#: apps/desktop/src/main.rs:1610
+#: apps/desktop/src/main.rs:1633
 msgid "Another app's ADB server (version {version}) is running; ZenLink does not stop it."
 msgstr "Server ADB versi {version} milik aplikasi lain sedang berjalan; ZenLink tidak menghentikannya."
 
-#: apps/desktop/src/main.rs:1624
+#: apps/desktop/src/main.rs:1647
 msgid "Emulator"
 msgstr "Emulator"
 
-#: apps/desktop/src/main.rs:1629
+#: apps/desktop/src/main.rs:1652
 msgid "Tap Allow on the phone"
 msgstr "Ketuk Izinkan di HP"
 
-#: apps/desktop/src/main.rs:1630
+#: apps/desktop/src/main.rs:1653
 msgid "Offline, reconnect the cable"
 msgstr "Offline, colok ulang kabel"
 
-#: apps/desktop/src/main.rs:1631
+#: apps/desktop/src/main.rs:1654
 msgid "No USB permission or driver"
 msgstr "Tidak ada izin/driver USB"
 
-#: apps/desktop/src/main.rs:1632
+#: apps/desktop/src/main.rs:1655
 msgid "Recovery or bootloader mode"
 msgstr "Mode recovery/bootloader"
 
-#: apps/desktop/src/main.rs:1634
+#: apps/desktop/src/main.rs:1657
 msgid "Android too old (API {sdk}, needs 21+)"
 msgstr "Android terlalu lama (API {sdk}, perlu 21+)"
 
-#: apps/desktop/src/main.rs:1636
+#: apps/desktop/src/main.rs:1659
 msgid "Reading device info…"
 msgstr "Membaca info perangkat…"
 
-#: apps/desktop/src/main.rs:1869
+#: apps/desktop/src/main.rs:1892
 msgid ", no PC decoder"
 msgstr ", tanpa decoder di PC"
 
-#: apps/desktop/src/main.rs:1883
+#: apps/desktop/src/main.rs:1906
 msgid "Start mirroring first."
 msgstr "Mulai mirroring dulu."
 
-#: apps/desktop/src/main.rs:1892
+#: apps/desktop/src/main.rs:1915
 msgid "No picture to read yet."
 msgstr "Belum ada gambar untuk dibaca."
 
-#: apps/desktop/src/main.rs:1895
+#: apps/desktop/src/main.rs:1918
 msgid "Reading the text on the screen…"
 msgstr "Membaca teks di layar…"
 
-#: apps/desktop/src/main.rs:1930
+#: apps/desktop/src/main.rs:1953
 msgid "Text recognition failed (Windows OCR)."
 msgstr "Gagal membaca teks (Windows OCR)."
 
-#: apps/desktop/src/main.rs:1932
+#: apps/desktop/src/main.rs:1955
 msgid "No text found on the screen."
 msgstr "Tidak ada teks di layar."
 
-#: apps/desktop/src/main.rs:1934
+#: apps/desktop/src/main.rs:1957
 msgid "Text read, but Windows didn't allow copying it to the clipboard."
 msgstr "Teks terbaca, tapi Windows tidak mengizinkan menyalin ke clipboard."
 
-#: apps/desktop/src/main.rs:1936
+#: apps/desktop/src/main.rs:1959
 msgid "Nothing new on this screen; the copied text is unchanged."
 msgstr "Tidak ada yang baru di layar ini; teks yang disalin tidak berubah."
 
-#: apps/desktop/src/main.rs:1939
+#: apps/desktop/src/main.rs:1962
 msgid "Copied to the PC: {n} new line(s) ({total} in total). Alt+R starts over."
 msgstr "Disalin ke PC: {n} baris baru ({total} total). Alt+R mulai dari awal."
 
-#: apps/desktop/src/main.rs:2080
+#: apps/desktop/src/main.rs:2127
 msgid "system"
 msgstr "sistem"
 
-#: apps/desktop/src/main.rs:2088
+#: apps/desktop/src/main.rs:2135
 msgid "The phone listed no apps."
 msgstr "HP tidak memberi daftar app."
 
-#: apps/desktop/src/main.rs:2090
+#: apps/desktop/src/main.rs:2137
 msgid "No app matches."
 msgstr "Tidak ada app yang cocok."
 
-#: apps/desktop/src/main.rs:2092
+#: apps/desktop/src/main.rs:2139
 msgid "{_0} of {total} apps. Type to search."
 msgstr "{_0} dari {total} app. Ketik untuk mencari."
 
-#: apps/desktop/src/main.rs:2098
+#: apps/desktop/src/main.rs:2145
 msgid "{total} apps."
 msgstr "{total} app."
 
-#: apps/desktop/src/main.rs:2113
+#: apps/desktop/src/main.rs:2160
 msgid "Start mirroring an Android phone first."
 msgstr "Mulai mirroring HP Android dulu."
 
-#: apps/desktop/src/main.rs:2117
+#: apps/desktop/src/main.rs:2164
 msgid "Apps on {_0}"
 msgstr "Aplikasi di {_0}"
 
-#: apps/desktop/src/main.rs:2137
+#: apps/desktop/src/main.rs:2184
 msgid "Reading the phone's apps…"
 msgstr "Membaca daftar app di HP…"
 
-#: apps/desktop/src/main.rs:2158
+#: apps/desktop/src/main.rs:2205
 msgid "Could not read the apps: {e}"
 msgstr "Daftar app tidak terbaca: {e}"
 
-#: apps/desktop/src/main.rs:2184
+#: apps/desktop/src/main.rs:2231
 msgid "Opening {_0}…"
 msgstr "Membuka {_0}…"
 
-#: apps/desktop/src/main.rs:2186
+#: apps/desktop/src/main.rs:2233
 msgid "Phone control is not ready."
 msgstr "Kontrol HP belum siap."
 
-#: apps/desktop/src/main.rs:2202
+#: apps/desktop/src/main.rs:2249
 msgid "The app window did not open: {e}"
 msgstr "Jendela app gagal dibuka: {e}"
 
-#: apps/desktop/src/main.rs:2271
+#: apps/desktop/src/main.rs:2318
 msgid "1/3 · Reading the phone's Wi-Fi address…"
 msgstr "1/3 · Membaca alamat Wi-Fi HP…"
 
-#: apps/desktop/src/main.rs:2278
+#: apps/desktop/src/main.rs:2325
 msgid "The phone is not on Wi-Fi"
 msgstr "HP belum tersambung ke Wi-Fi"
 
-#: apps/desktop/src/main.rs:2279
+#: apps/desktop/src/main.rs:2326
 msgid "Couldn't read the Wi-Fi address"
 msgstr "Gagal membaca alamat Wi-Fi"
 
-#: apps/desktop/src/main.rs:2281
+#: apps/desktop/src/main.rs:2328
 msgid "2/3 · Turning on ADB over Wi-Fi on the phone (its screen may flicker)…"
 msgstr "2/3 · Menyalakan mode Wi-Fi ADB di HP (layar HP bisa berkedip)…"
 
-#: apps/desktop/src/main.rs:2285
+#: apps/desktop/src/main.rs:2332
 msgid "Couldn't turn on TCP/IP mode"
 msgstr "Gagal mengaktifkan mode TCP/IP"
 
-#: apps/desktop/src/main.rs:2288
+#: apps/desktop/src/main.rs:2335
 msgid "3/3 · Connecting over Wi-Fi…"
 msgstr "3/3 · Menyambung lewat Wi-Fi…"
 
-#: apps/desktop/src/main.rs:2296
+#: apps/desktop/src/main.rs:2343
 msgid "Connected over Wi-Fi. You can unplug the cable"
 msgstr "Tersambung lewat Wi-Fi. Kabel boleh dicabut"
 
-#: apps/desktop/src/main.rs:2306
+#: apps/desktop/src/main.rs:2353
 msgid "Couldn't connect over Wi-Fi. The PC and the phone must be on the same network"
 msgstr "Gagal tersambung lewat Wi-Fi. PC dan HP harus di jaringan yang sama"
 
-#: apps/desktop/src/main.rs:2319
+#: apps/desktop/src/main.rs:2366
 msgid "Invalid address. Example: 192.168.1.20:37099"
 msgstr "Alamat tidak valid. Contoh: 192.168.1.20:37099"
 
-#: apps/desktop/src/main.rs:2323
+#: apps/desktop/src/main.rs:2370
 msgid "Connecting to the phone over Wi-Fi…"
 msgstr "Menyambung ke HP lewat Wi-Fi…"
 
-#: apps/desktop/src/main.rs:2325
+#: apps/desktop/src/main.rs:2372
 msgid "Connected over Wi-Fi"
 msgstr "Tersambung lewat Wi-Fi"
 
-#: apps/desktop/src/main.rs:2339
+#: apps/desktop/src/main.rs:2386
 msgid "Enter the pairing address (IP:port) shown on the phone."
 msgstr "Isi alamat pairing (IP:port) yang tampil di HP."
 
-#: apps/desktop/src/main.rs:2344
+#: apps/desktop/src/main.rs:2391
 msgid "The pairing code has 6 digits."
 msgstr "Kode pairing harus 6 digit."
 
-#: apps/desktop/src/main.rs:2348
+#: apps/desktop/src/main.rs:2395
 msgid "Pairing with the phone…"
 msgstr "Pairing dengan HP…"
 
-#: apps/desktop/src/main.rs:2350
+#: apps/desktop/src/main.rs:2397
 msgid "Paired. Now enter the address on the Wireless debugging screen and press Connect"
 msgstr "Pairing berhasil. Sekarang isi alamat di layar Wireless debugging lalu tekan Sambung"
 
-#: apps/desktop/src/main.rs:2351
+#: apps/desktop/src/main.rs:2398
 msgid "Pairing failed"
 msgstr "Pairing gagal"
 
-#: apps/desktop/src/main.rs:2399
+#: apps/desktop/src/main.rs:2446
 msgid "Waiting for the phone to scan…"
 msgstr "Menunggu HP memindai…"
 
-#: apps/desktop/src/main.rs:2447
+#: apps/desktop/src/main.rs:2494
 msgid "The QR code was not scanned within 2 minutes. Try again, or use a pairing code"
 msgstr "QR tidak dipindai dalam 2 menit. Coba lagi, atau pakai kode pairing"
 
-#: apps/desktop/src/main.rs:2450
+#: apps/desktop/src/main.rs:2497
 msgid "Phone found, pairing…"
 msgstr "HP ditemukan, pairing…"
 
-#: apps/desktop/src/main.rs:2456
+#: apps/desktop/src/main.rs:2503
 msgid "Paired, connecting…"
 msgstr "Pairing berhasil, menyambung…"
 
-#: apps/desktop/src/main.rs:2470
+#: apps/desktop/src/main.rs:2517
 msgid "Connect failed"
 msgstr "Sambung gagal"
 
-#: apps/desktop/src/main.rs:2479
+#: apps/desktop/src/main.rs:2526
 msgid "Paired. Enter the address on the Wireless debugging screen and press Connect"
 msgstr "Pairing berhasil. Isi alamat di layar Wireless debugging lalu tekan Sambung"
 
-#: apps/desktop/src/main.rs:2531
+#: apps/desktop/src/main.rs:2578
 msgid "Test recording"
 msgstr "Rekaman uji"
 
-#: apps/desktop/src/main.rs:2559
+#: apps/desktop/src/main.rs:2606
 msgid "The picked device is not ready yet. Follow the steps below, then press Start."
 msgstr "Perangkat yang dipilih belum siap. Ikuti langkah di bawah, lalu tekan Mulai."
 
-#: apps/desktop/src/main.rs:2563
+#: apps/desktop/src/main.rs:2610
 msgid "Pick a device first. Plug in the phone with USB debugging on, or connect it over Wi-Fi."
 msgstr "Pilih perangkat dulu. Colok HP dengan Debugging USB aktif, atau sambungkan lewat Wi-Fi."
 
-#: apps/desktop/src/main.rs:2573
+#: apps/desktop/src/main.rs:2620
 msgid "The scrcpy server file is missing ({e}). Reinstall ZenLink."
 msgstr "File server scrcpy tidak ada ({e}). Pasang ulang ZenLink."
 
-#: apps/desktop/src/main.rs:2666
+#: apps/desktop/src/main.rs:2713
 msgid "Needs attention"
 msgstr "Perlu izin"
 
-#: apps/desktop/src/main.rs:2810
+#: apps/desktop/src/main.rs:2857
 msgid "Pick a ready Android phone first."
 msgstr "Pilih HP Android yang siap dulu."
 
-#: apps/desktop/src/main.rs:2850
+#: apps/desktop/src/main.rs:2897
 msgid "The window did not open: {e}"
 msgstr "Jendela gagal dibuka: {e}"
 
-#: apps/desktop/src/main.rs:2950
+#: apps/desktop/src/main.rs:2997
 msgid "Mirroring failed: {_0}. Reconnect the cable or tap Allow on the phone, then Start again."
 msgstr "Mirroring gagal: {_0}. Cabut-colok kabel atau ketuk Izinkan di HP, lalu Mulai lagi."
 
-#: apps/desktop/src/main.rs:2951
+#: apps/desktop/src/main.rs:2998
 msgid "Retrying… ({_0})"
 msgstr "Mencoba lagi… ({_0})"
 
-#: apps/desktop/src/main.rs:2978
+#: apps/desktop/src/main.rs:3025
 msgid "Turn on mouse control on this phone"
 msgstr "Aktifkan kontrol mouse di HP ini"
 
-#: apps/desktop/src/main.rs:2979
+#: apps/desktop/src/main.rs:3026
 msgid "Xiaomi, Redmi and POCO phones (MIUI / HyperOS) ignore the mouse and keyboard until you allow it: on the phone open Settings › Additional settings › Developer options and turn on \"USB debugging (Security settings)\" (it may ask for a Mi account and a SIM card). Then press Stop and Start again."
 msgstr "HP Xiaomi, Redmi dan POCO (MIUI / HyperOS) mengabaikan mouse dan keyboard sampai kamu izinkan: di HP buka Setelan › Setelan tambahan › Opsi pengembang lalu aktifkan \"USB debugging (Security settings)\" / \"Debug USB (Setelan keamanan)\" (bisa minta akun Mi dan kartu SIM). Lalu tekan Stop dan Start lagi."
 
-#: apps/desktop/src/main.rs:2980
+#: apps/desktop/src/main.rs:3027
 msgid "Open Developer options on the phone"
 msgstr "Buka Opsi pengembang di HP"
 
-#: apps/desktop/src/main.rs:3001
+#: apps/desktop/src/main.rs:3048
 msgid "Ghost mode off"
 msgstr "Mode Ghost mati"
 
-#: apps/desktop/src/main.rs:3015
+#: apps/desktop/src/main.rs:3062
 msgid "Ghost mode: clicks go to the app behind. Press {key} again (or click the tray icon) to leave."
 msgstr "Mode Ghost: klik tembus ke aplikasi di belakang. Tekan {key} lagi (atau klik ikon tray) untuk keluar."
 
-#: apps/desktop/src/main.rs:3032
+#: apps/desktop/src/main.rs:3079
 msgid "This shortcut needs Apple Driver mode while mirroring."
 msgstr "Shortcut ini butuh mode Apple Driver saat mirroring."
 
-#: apps/desktop/src/main.rs:3039
+#: apps/desktop/src/main.rs:3086
 msgid "Sound on the PC: off (Alt+M)"
 msgstr "Suara di PC: mati (Alt+M)"
 
-#: apps/desktop/src/main.rs:3041
+#: apps/desktop/src/main.rs:3088
 msgid "Sound on the PC: on (Alt+M)"
 msgstr "Suara di PC: nyala (Alt+M)"
 
-#: apps/desktop/src/main.rs:3058
+#: apps/desktop/src/main.rs:3105
 msgid "Rotation: {label}"
 msgstr "Rotasi: {label}"
 
-#: apps/desktop/src/main.rs:3074
+#: apps/desktop/src/main.rs:3121
 msgid "Copy history cleared. The next Alt+C starts fresh."
 msgstr "Riwayat teks dihapus. Alt+C berikutnya mulai dari awal."
 
-#: apps/desktop/src/main.rs:3083
+#: apps/desktop/src/main.rs:3130
 msgid "Typing {n} characters on the device."
 msgstr "Mengetik {n} karakter di perangkat."
 
-#: apps/desktop/src/main.rs:3085
+#: apps/desktop/src/main.rs:3132
 msgid "The PC clipboard has no text."
 msgstr "Clipboard PC tidak berisi teks."
 
-#: apps/desktop/src/main.rs:3123
+#: apps/desktop/src/main.rs:3170
 msgid "The chosen encoder failed; now using {using}. Your choice is kept."
 msgstr "Encoder pilihan gagal, sekarang pakai {using}. Pilihanmu tetap disimpan."
 
-#: apps/desktop/src/main.rs:3134
+#: apps/desktop/src/main.rs:3181
 msgid "Open ZenLink"
 msgstr "Buka ZenLink"
 
-#: apps/desktop/src/main.rs:3237
+#: apps/desktop/src/main.rs:3286
 msgid "Checking for updates…"
 msgstr "Memeriksa pembaruan…"
 
-#: apps/desktop/src/main.rs:3247
+#: apps/desktop/src/main.rs:3296
 msgid "ZenLink is up to date."
 msgstr "ZenLink sudah versi terbaru."
 
-#: apps/desktop/src/main.rs:3258
+#: apps/desktop/src/main.rs:3307
 msgid "Other edition: v{v}. Installs as a separate app; settings do not move over."
 msgstr "Edisi lain: v{v}. Terpasang sebagai aplikasi terpisah, pengaturan tidak ikut pindah."
 
-#: apps/desktop/src/main.rs:3260
+#: apps/desktop/src/main.rs:3309
 msgid "New version available: v{v}"
 msgstr "Versi baru tersedia: v{v}"
 
-#: apps/desktop/src/main.rs:3267
+#: apps/desktop/src/main.rs:3316
 msgid "ZenLink v{v} is available. Open Settings › Updates."
 msgstr "ZenLink v{v} tersedia. Buka Pengaturan › Pembaruan."
 
-#: apps/desktop/src/main.rs:3275
+#: apps/desktop/src/main.rs:3324
 msgid "Could not check: {e}"
 msgstr "Tidak bisa memeriksa: {e}"
 
-#: apps/desktop/src/main.rs:3311
+#: apps/desktop/src/main.rs:3360
 msgid "Failed: {e}"
 msgstr "Gagal: {e}"
 
-#: apps/desktop/src/main.rs:3317
+#: apps/desktop/src/main.rs:3366
 msgid "Downloading {_0}…"
 msgstr "Mengunduh {_0}…"
 
-#: apps/desktop/src/main.rs:3348
+#: apps/desktop/src/main.rs:3397
 msgid "The other edition's installer is open."
 msgstr "Penginstal edisi lain sudah dibuka."
 
-#: apps/desktop/src/main.rs:3356
+#: apps/desktop/src/main.rs:3405
 msgid "Update failed: {e}"
 msgstr "Pembaruan gagal: {e}"
 
-#: apps/desktop/src/main.rs:3518
+#: apps/desktop/src/main.rs:3574
 msgid "Pick an iPhone or iPad first. Plug it in with the cable and unlock it; it shows up in the list."
 msgstr "Pilih iPhone atau iPad dulu. Colok pakai kabel dan buka kuncinya; perangkat muncul di daftar."
 
-#: apps/desktop/src/main.rs:3553
+#: apps/desktop/src/main.rs:3609
 msgid "{name} is not connected. Plug in the cable (or join the same Wi-Fi), unlock it, then press Start."
 msgstr "{name} belum tersambung. Colokkan kabel (atau sambungkan ke Wi-Fi yang sama), buka kunci, lalu tekan Mulai."
 
-#: apps/desktop/src/main.rs:3575
+#: apps/desktop/src/main.rs:3631
 msgid "Waiting for administrator permission…"
 msgstr "Menunggu izin administrator…"
 
-#: apps/desktop/src/main.rs:3642
+#: apps/desktop/src/main.rs:3698
 msgid "Restarting the ZenLink service…"
 msgstr "Memulai ulang layanan ZenLink…"
 
-#: apps/desktop/src/main.rs:3660
+#: apps/desktop/src/main.rs:3716
 msgid "Restarting the connection…"
 msgstr "Memulai ulang koneksi…"
 
-#: apps/desktop/src/main.rs:3740
+#: apps/desktop/src/main.rs:3796
 msgid "Applying the Android settings…"
 msgstr "Menerapkan pengaturan Android…"
 
-#: apps/desktop/src/main.rs:3931
+#: apps/desktop/src/main.rs:3987
 msgid "Could not install adb. Check the internet connection and try again."
 msgstr "Gagal memasang adb. Cek internet lalu coba lagi."
 
-#: apps/desktop/src/main.rs:4231
+#: apps/desktop/src/main.rs:4287
 msgid "The mode was not saved, try again."
 msgstr "Mode belum tersimpan, coba lagi."
 
-#: apps/desktop/src/main.rs:4252
+#: apps/desktop/src/main.rs:4308
 msgid "Switching to Wi-Fi…"
 msgstr "Beralih ke Wi-Fi…"
 
-#: apps/desktop/src/main.rs:4254
+#: apps/desktop/src/main.rs:4310
 msgid "Switching to the cable…"
 msgstr "Beralih ke kabel…"
 
-#: apps/desktop/src/main.rs:4268
+#: apps/desktop/src/main.rs:4324
 msgid "The connection could not be changed, try again."
 msgstr "Sambungan belum bisa diganti, coba lagi."
 
-#: apps/desktop/src/main.rs:4358
+#: apps/desktop/src/main.rs:4414
 msgid "Setting up Wi-Fi…"
 msgstr "Menyiapkan Wi-Fi…"
 
-#: apps/desktop/src/main.rs:4360
+#: apps/desktop/src/main.rs:4416
 msgid "Checking drivers…"
 msgstr "Memeriksa driver…"
 
-#: apps/desktop/src/main.rs:4386
+#: apps/desktop/src/main.rs:4442
 msgid "Wi-Fi is ready. You can unplug the cable."
 msgstr "Wi-Fi siap. Sekarang bisa tanpa kabel."
 
-#: apps/desktop/src/main.rs:4388
+#: apps/desktop/src/main.rs:4444
 msgid "Wi-Fi could not be set up."
 msgstr "Wi-Fi belum bisa disiapkan."
 
-#: apps/desktop/src/main.rs:4395
+#: apps/desktop/src/main.rs:4451
 msgid "Drivers checked."
 msgstr "Driver sudah diperiksa."
 
-#: apps/desktop/src/main.rs:4495
+#: apps/desktop/src/main.rs:4551
 msgid "Nothing was copied on the phone."
 msgstr "Tidak ada yang tersalin di HP."
 
-#: apps/desktop/src/main.rs:4497
+#: apps/desktop/src/main.rs:4553
 msgid "Copied from the phone. Paste it on the PC with Ctrl+V."
 msgstr "Tersalin dari HP. Tempel di PC dengan Ctrl+V."
 
-#: apps/desktop/src/main.rs:4499
+#: apps/desktop/src/main.rs:4555
 msgid "Text copied on the phone, but Windows didn't allow it on the clipboard."
 msgstr "Teks tersalin di HP, tapi Windows tidak mengizinkannya masuk clipboard."
 
-#: apps/desktop/src/main.rs:4621
+#: apps/desktop/src/main.rs:4677
 msgid "Unlocking the device…"
 msgstr "Membuka kunci perangkat…"
 
-#: apps/desktop/src/main.rs:4931
+#: apps/desktop/src/main.rs:4987
 msgid "No picture from the iPhone/iPad yet. Unlock the device and press Restart. If it stays empty, send the logs (Settings › About › Open log folder)."
 msgstr "Belum ada gambar dari iPhone/iPad. Buka kunci perangkat lalu tekan Mulai ulang. Kalau tetap kosong, kirim log (Pengaturan › Tentang › Buka folder log)."
 
-#: apps/desktop/src/main.rs:4945
+#: apps/desktop/src/main.rs:5001
 msgid "sound"
 msgstr "suara"
-
-#. added by hand
-msgid "Administrator permission was not given. Nothing was changed."
-msgstr "Izin administrator tidak diberikan. Tidak ada yang diubah."
 
 #. added by hand
 msgid "The device was disconnected. Plug it back in and try again."

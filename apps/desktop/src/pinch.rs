@@ -74,7 +74,13 @@ pub fn zoom(u: f32, v: f32, d: f32, sink: Sink) {
                         }
                         r = to;
                         match rx.recv_timeout(LIFT_AFTER) {
-                            Ok((_, _, nd, _)) => d = nd,
+                            Ok((_, _, nd, _)) => {
+                                // A touchpad sends faster than one step plays: sum the backlog.
+                                d = nd;
+                                while let Ok((_, _, more, _)) = rx.try_recv() {
+                                    d += more;
+                                }
+                            }
                             Err(RecvTimeoutError::Timeout | RecvTimeoutError::Disconnected) => {
                                 break
                             }

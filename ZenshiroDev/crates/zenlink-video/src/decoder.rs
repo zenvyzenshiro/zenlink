@@ -63,6 +63,13 @@ impl Mft {
                 &mut list,
                 &mut count,
             )?;
+            // No decoder at all: MFTEnumEx may leave the list null.
+            if list.is_null() || count == 0 {
+                if !list.is_null() {
+                    CoTaskMemFree(Some(list as _));
+                }
+                return Err(windows::core::Error::from(MF_E_TOPO_CODEC_NOT_FOUND));
+            }
             let acts = std::slice::from_raw_parts_mut(list, count as usize);
             let mut found = None;
             for a in acts.iter_mut() {
@@ -422,6 +429,9 @@ pub fn decoder_available(codec: &Codec) -> bool {
         )
         .is_err()
         {
+            return false;
+        }
+        if list.is_null() {
             return false;
         }
         for a in std::slice::from_raw_parts_mut(list, count as usize) {

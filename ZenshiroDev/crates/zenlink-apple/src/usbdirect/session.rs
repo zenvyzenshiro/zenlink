@@ -449,6 +449,14 @@ impl Session {
 
     fn deactivate(&mut self) {
         let Some(c) = self.cap.take() else {
+            // activate() failed after asking for capture mode (trust check, claim): put a
+            // device left in capture mode back, or it stays silent until it is replugged.
+            if let Ok(Some(d)) = self.find() {
+                if configs(&d).1.is_some() {
+                    self.capture_request(&d, false);
+                    log::info!("usb direct: capture mode undone after a failed start");
+                }
+            }
             return;
         };
         c.dev.release(c.iface);

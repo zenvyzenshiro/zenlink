@@ -62,6 +62,8 @@ thread_local! {
     static HANDLER: RefCell<Option<Handler>> = const { RefCell::new(None) };
     static LABELS: RefCell<(String, String)> = RefCell::new(("Open ZenLink".into(), "Quit".into()));
     static ICON_ON: Cell<bool> = const { Cell::new(false) };
+    /// The icon should be shown (it may not be yet: no taskbar right after sign-in).
+    static WANT: Cell<bool> = const { Cell::new(false) };
     static TASKBAR_CREATED: Cell<u32> = const { Cell::new(0) };
 }
 
@@ -79,6 +81,11 @@ pub fn show_running_instance() -> bool {
         }
         _ => false,
     }
+}
+
+/// True while a ZenLink window (any copy) runs for this user.
+pub fn is_running() -> bool {
+    unsafe { FindWindowW(CLASS, PCWSTR::null()) }.is_ok_and(|h| !h.is_invalid())
 }
 
 /// Creates the helper window. `handler` runs on the UI thread; it should
@@ -121,6 +128,7 @@ pub fn install(handler: impl Fn(Event) + 'static) {
 /// Shows or removes the tray icon and sets the menu language.
 pub fn set_icon(on: bool, open: &str, quit: &str) {
     LABELS.with_borrow_mut(|l| *l = (open.to_string(), quit.to_string()));
+    WANT.set(on);
     if on == ICON_ON.get() {
         return;
     }
@@ -224,9 +232,10 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
             LRESULT(0)
         }
         m if m != 0 && m == TASKBAR_CREATED.get() => {
-            // Explorer restarted: the icon is gone, add it again.
-            if ICON_ON.get() {
-                notify(NIM_ADD);
+            // Explorer (re)started: the icon is gone, or could not be added before the
+            // taskbar existed (Start with Windows): add it now.
+            if WANT.get() && notify(NIM_ADD) {
+                ICON_ON.set(true);
             }
             LRESULT(0)
         }

@@ -411,8 +411,9 @@ fn inf_pids(text: &str) -> Vec<String> {
     let up = text.to_uppercase();
     let mut out = Vec::new();
     for (i, _) in up.match_indices("VID_05AC&PID_") {
-        let pid = &up[i + 13..(i + 17).min(up.len())];
-        let next = up[(i + 17).min(up.len())..].chars().next();
+        // `get`: a non-ASCII character right after the match must not split a char (panic).
+        let pid = up.get(i + 13..i + 17).unwrap_or_default();
+        let next = up.get(i + 17..).and_then(|s| s.chars().next());
         if pid.len() == 4
             && pid.chars().all(|c| c.is_ascii_hexdigit())
             && !next.is_some_and(|c| c.is_ascii_hexdigit() || c == '&')
@@ -568,6 +569,53 @@ fn blocked_by(rules: &[String], exe: &str) -> bool {
     !allowed
 }
 
+/// True when a firewall rule names this ZenLink.exe (the uninstaller removes it).
+pub fn has_firewall_rule() -> bool {
+    let (Ok(exe), Some(k)) = (
+        std::env::current_exe(),
+        Key::open(HKEY_LOCAL_MACHINE, FIREWALL_RULES),
+    ) else {
+        return false;
+    };
+    let app = format!("|app={}|", exe.to_string_lossy().to_lowercase());
+    k.value_names()
+        .iter()
+        .any(|n| k.string(n).to_lowercase().contains(&app))
+}
+
+/// Removes this exe's firewall rules (uninstall). Asks for administrator permission.
+pub fn remove_firewall_rules() -> Result<(), String> {
+    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    let exe = exe.display().to_string().replace('"', "");
+    match elevated_cmd(&format!(
+        "/c netsh advfirewall firewall delete rule name=all program=\"{exe}\""
+    ))? {
+        Some(0) => Ok(()),
+        c => Err(format!("netsh exit {}", c.unwrap_or(-1))),
+    }
+}
+
+/// `cmd.exe <cmd>` with administrator rights (UAC), hidden; its exit code (1223: declined).
+fn elevated_cmd(cmd: &str) -> Result<Option<i32>, String> {
+    let launcher = format!(
+        "try {{ $p = Start-Process -FilePath cmd.exe -Verb RunAs -WindowStyle Hidden -Wait -PassThru \
+         -ArgumentList '{}'; exit $p.ExitCode }} catch {{ exit 1223 }}",
+        cmd.replace('\'', "''")
+    );
+    Command::new("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            &launcher,
+        ])
+        .creation_flags(NO_WINDOW)
+        .status()
+        .map(|s| s.code())
+        .map_err(|e| e.to_string())
+}
+
 /// Replaces this exe's inbound rules with one allow rule for the local network (the installer's
 /// "ZenLink (AirPlay)" rule). Asks for administrator permission.
 pub fn allow_network() -> Result<(), String> {
@@ -578,25 +626,8 @@ pub fn allow_network() -> Result<(), String> {
          netsh advfirewall firewall add rule name=\"ZenLink (AirPlay)\" dir=in action=allow \
          program=\"{exe}\" enable=yes profile=any remoteip=localsubnet"
     );
-    let launcher = format!(
-        "try {{ $p = Start-Process -FilePath cmd.exe -Verb RunAs -WindowStyle Hidden -Wait -PassThru \
-         -ArgumentList '{}'; exit $p.ExitCode }} catch {{ exit 1223 }}",
-        cmd.replace('\'', "''")
-    );
     log::info!("firewall: allowing {exe} on the local network (elevated)");
-    let code = Command::new("powershell.exe")
-        .args([
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-Command",
-            &launcher,
-        ])
-        .creation_flags(NO_WINDOW)
-        .status()
-        .map_err(|e| e.to_string())?
-        .code();
-    match code {
+    match elevated_cmd(&cmd)? {
         Some(0) if !firewall_blocked() => Ok(()),
         Some(1223) => Err("Administrator permission was not given. Nothing was changed.".into()),
         c => Err(format!(

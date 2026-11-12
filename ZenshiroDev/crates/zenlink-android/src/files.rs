@@ -40,6 +40,21 @@ pub fn kind(path: &Path) -> Kind {
     }
 }
 
+/// `name` (already [`safe_name`]) usable on Windows: `CON`, `nul.txt`, `COM1` and the other
+/// device names get a leading `_`, or Windows would open the device instead of a file.
+pub fn windows_safe(name: String) -> String {
+    const DEVICES: [&str; 22] = [
+        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+        "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    ];
+    let stem = name.split('.').next().unwrap_or_default().trim_end();
+    if DEVICES.iter().any(|d| stem.eq_ignore_ascii_case(d)) {
+        format!("_{name}")
+    } else {
+        name
+    }
+}
+
 /// A file name that is safe on the phone's shared storage (FAT rules):
 /// no folders, no control characters, no `"*/:<>?\|`, not `.` or `..`,
 /// at most 200 bytes (the extension kept). `None` when nothing is left.
@@ -204,6 +219,15 @@ mod tests {
         assert_eq!(kind(Path::new(r"C:\x\WhatsApp.APK")), Kind::Install);
         assert_eq!(kind(Path::new(r"C:\x\photo.jpg")), Kind::Copy);
         assert_eq!(kind(Path::new(r"C:\x\apk")), Kind::Copy);
+    }
+
+    #[test]
+    fn windows_device_names_get_a_prefix() {
+        assert_eq!(windows_safe("CON".into()), "_CON");
+        assert_eq!(windows_safe("nul.txt".into()), "_nul.txt");
+        assert_eq!(windows_safe("Com1.tar.gz".into()), "_Com1.tar.gz");
+        assert_eq!(windows_safe("console.log".into()), "console.log");
+        assert_eq!(windows_safe("COM10".into()), "COM10");
     }
 
     #[test]

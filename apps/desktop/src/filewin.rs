@@ -102,7 +102,7 @@ pub fn download_dir(device: &str) -> PathBuf {
         .join("Downloads")
         .join("ZenLink");
     let name = zenlink_android::files::safe_name(device).unwrap_or_else(|| "Android".into());
-    base.join(name)
+    base.join(zenlink_android::files::windows_safe(name))
 }
 
 #[derive(Clone)]
@@ -393,6 +393,32 @@ fn runs_code(path: &Path) -> bool {
         "application",
         "appref-ms",
         "settingcontent-ms",
+        // Office macros, add-ins and query files, scripts, shell and theme files.
+        "docm",
+        "dotm",
+        "xlsm",
+        "xltm",
+        "xlam",
+        "pptm",
+        "potm",
+        "ppam",
+        "xll",
+        "wll",
+        "iqy",
+        "slk",
+        "rdp",
+        "py",
+        "pyw",
+        "sct",
+        "ws",
+        "msp",
+        "theme",
+        "themepack",
+        "library-ms",
+        "search-ms",
+        "searchconnector-ms",
+        "diagcab",
+        "gadget",
     ];
     path.extension()
         .and_then(|e| e.to_str())

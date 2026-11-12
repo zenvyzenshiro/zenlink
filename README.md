@@ -59,7 +59,7 @@
 | Feature | Description |
 | :--- | :--- |
 | **🤖 Android (new in v2.5)** | Android 5.0+ over USB, or Wi-Fi (one click from a USB connection, or Android 11+ wireless debugging: scan a QR code shown by ZenLink, or enter a pairing code). Picture, sound (Android 11+), mouse/keyboard control, clipboard, real device names, per-device settings, video profiles and Smart Encoder Detection (H.264 by default; H.265 only when the phone and Windows both decode it, with automatic fallback). Uses Google's official `adb` (downloaded by ZenLink on first use, about 8 MB) and the official scrcpy server (bundled). |
-| **🪶 One program, small download (v2.5.12+)** | Everything runs inside one `ZenLink.exe` (Rust): Apple Driver, ZenLink Studio, AirPlay, Android and the driver settings. No Python helper. Setup is 9.3 MB (it was 60.8 MB). |
+| **🪶 One program, small download (v2.5.12+)** | Everything runs inside one `ZenLink.exe` (Rust): Apple Driver, ZenLink Studio, AirPlay, Android and the driver settings. No Python helper. Setup is 19.6 MB, one file (it was 60.8 MB). |
 | **📱 Device picker** | Lists every connected iPhone / iPad (USB or Wi-Fi, iOS version, status) and the ones you used before; since v2.5.13 Android phones work the same way. Click a device, then press Start; with nothing picked, ZenLink asks you to pick one first. |
 | **🧩 Android apps launcher (new in v2.5.1)** | **Apps** in the dock: a searchable grid of the phone's apps. Open one on the phone's screen or, on Android 10+, in its own window. |
 | **📂 Drop files on the window (new in v2.5.1)** | Android: an `.apk` is installed, other files go to Download. iPhone / iPad (Apple Driver): files land in an app with File Sharing (VLC, Documents …). |
@@ -138,7 +138,7 @@ Stuck? Every screen says what is missing (driver, Developer Mode, USB debugging)
 
 ### Option 1A: Installer (Recommended)
 1. Download **`ZenLink-vX.Y.Z-Setup.exe`** from [**Releases**](../../releases/latest).
-2. Run it and follow the steps (Bahasa Indonesia or English). ZenLink appears in the Start Menu and, if you want, on the Desktop.
+2. Run it and click **Yes**. ZenLink installs for your user (no administrator rights), appears in the Start Menu and on the Desktop, and starts. Remove it in Windows Settings > Apps. (Since v2.5.14 Setup is ZenLink.exe itself, so Smart App Control no longer blocks a separate installer.)
 3. Open **ZenLink**, choose **iPhone / iPad** or **Android Smartphone / Tablet**, plug in your device and press **Mulai / Start**.
 
 ### Option 1B: Portable (one .exe, no installation)
@@ -158,7 +158,7 @@ The first run builds `ZenLink.exe` (needs Rust: rustup), then offers Apple Devic
 
 Tests: `cargo test --workspace` (no device needed; `ZenshiroDev\tooling\dev\airplay_sim.py` simulates an iPhone mirroring over AirPlay).
 
-To build the release files yourself: `powershell -ExecutionPolicy Bypass -File .\build_portable_release.ps1` (Rust, Inno Setup 6 for the installer). Everything it builds goes to `out\`.
+To build the release files yourself: `powershell -ExecutionPolicy Bypass -File .\build_portable_release.ps1` (Rust; Setup.exe is the same single-file ZenLink.exe, which installs itself). Everything it builds goes to `out\`.
 
 ### Repository layout
 

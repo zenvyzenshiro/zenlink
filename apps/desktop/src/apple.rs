@@ -911,19 +911,35 @@ impl Engine {
             .get(&dev.udid)
             .map(|i| i.version.clone())
             .unwrap_or_default();
-        let mut l = match dev.addr {
-            Some(addr) => {
-                let dir = wifi::record_dir().ok_or("no user folder")?;
-                let r = wifi::records(&dir)
-                    .into_iter()
-                    .find(|r| r.udid == dev.udid)
-                    .ok_or("the Wi-Fi pairing record is gone: connect the cable once")?;
-                link::Link::wifi(addr, &r).await?
+        // Stop ends the connect phase too, and a device that stops answering (asleep, left
+        // the Wi-Fi) ends it after a while instead of "connecting" forever.
+        let stopped = || async {
+            while !stop.load(Relaxed) {
+                tokio::time::sleep(Duration::from_millis(250)).await;
             }
-            None => link::Link::usb(&dev.udid).await?,
+        };
+        let connect = async {
+            match dev.addr {
+                Some(addr) => {
+                    let dir = wifi::record_dir().ok_or("no user folder")?;
+                    let r = wifi::records(&dir)
+                        .into_iter()
+                        .find(|r| r.udid == dev.udid)
+                        .ok_or("the Wi-Fi pairing record is gone: connect the cable once")?;
+                    link::Link::wifi(addr, &r).await
+                }
+                None => link::Link::usb(&dev.udid).await,
+            }
+        };
+        let mut l = tokio::select! {
+            r = tokio::time::timeout(Duration::from_secs(30), connect) => r.map_err(|_| {
+                "the device did not answer in 30 s: unlock it and try again".to_string()
+            })??,
+            _ = stopped() => return Ok(()),
         };
         if l.wifi && !self.info.lock().unwrap().contains_key(&dev.udid) {
-            match l.info().await {
+            let info = tokio::time::timeout(Duration::from_secs(10), l.info()).await;
+            match info.unwrap_or_else(|_| Err("timed out".into())) {
                 Ok(i) if !i.product_type.is_empty() => {
                     if !i.name.is_empty() {
                         sess.state.lock().unwrap().device = Some((i.name.clone(), true));
@@ -945,7 +961,10 @@ impl Engine {
                 "Preparing the device (first time downloads a small image)",
                 None,
             );
-            l.ensure_ddi(&version, |_| {}).await?;
+            tokio::select! {
+                r = l.ensure_ddi(&version, |_| {}) => r?,
+                _ = stopped() => return Ok(()),
+            }
         }
         let watch_rot = zenlink_apple::watch::orientation(l.adapter.clone(), l.rsd.clone(), |r| {
             sess.state.lock().unwrap().rotation = r;
@@ -1026,8 +1045,10 @@ impl Engine {
                     }
                     // Wake and type the saved passcode.
                     Input::Locked(at) => {
+                        // Hybrid: the picture comes over AirPlay, this session never reaches
+                        // "streaming" itself, so its phase says nothing here.
                         if !UNLOCK_ON_LOCK.load(Relaxed)
-                            || sess.state.lock().unwrap().phase != "streaming"
+                            || (!hybrid && sess.state.lock().unwrap().phase != "streaming")
                         {
                             continue;
                         }

@@ -18,6 +18,7 @@ mod filewin;
 mod flow;
 mod ghost;
 mod input;
+mod install;
 mod ocr;
 mod perf;
 mod pinch;
@@ -1152,12 +1153,32 @@ fn mode_remembered() -> bool {
         })
 }
 
+thread_local! {
+    /// The prefs the last Settings change started from (see on_prefs_changed).
+    static LAST_PREFS: std::cell::RefCell<Option<Prefs>> = const { std::cell::RefCell::new(None) };
+}
+
+/// Sets the window's prefs from code (not from Settings), so the next Settings change is
+/// compared with these values, not older ones.
+fn set_prefs(ui: &AppWindow, p: Prefs) {
+    LAST_PREFS.with_borrow_mut(|l| *l = Some(p.clone()));
+    ui.set_prefs(p);
+}
 /// Short message above the dock for 3.5 s.
 fn show_toast(ui: &AppWindow, text: String) {
+    // Only the newest toast's timer clears it (an older one would cut a new toast short).
+    thread_local!(static GEN: std::cell::Cell<u64> = const { std::cell::Cell::new(0) });
+    let gen = GEN.with(|g| {
+        g.set(g.get() + 1);
+        g.get()
+    });
     ui.set_toast("".into());
     ui.set_toast(text.into());
     let w = ui.as_weak();
     slint::Timer::single_shot(Duration::from_millis(3500), move || {
+        if GEN.with(|g| g.get()) != gen {
+            return;
+        }
         if let Some(ui) = w.upgrade() {
             ui.set_toast("".into());
         }
@@ -1525,6 +1546,8 @@ fn start_android_poll(ui: &AppWindow) {
                 ),
                 ServerStatus::Foreign(_) => (AdbView::Foreign, Vec::new()),
                 s => {
+                    // Running again: if another tool stops it later, start it once more.
+                    tried_start = false;
                     let (version, other) = match s {
                         ServerStatus::Mismatch { found, .. } => (found, true),
                         ServerStatus::Compatible(v) => (v, false),
@@ -1781,7 +1804,7 @@ fn android_select_device(ui: &AppWindow, d: &zenlink_android::discovery::Android
     });
     if known {
         prefs::save(&p);
-        ui.set_prefs(p);
+        set_prefs(ui, p);
     }
     APP.with_borrow_mut(|a| a.android_dev = Some(key));
     refresh_encoder_ui(ui);
@@ -1950,14 +1973,12 @@ fn copy_screen_text(ui: &AppWindow) {
 /// Puts `text` on the Windows clipboard. False when the clipboard is busy.
 fn set_pc_clipboard_text(text: &str) -> bool {
     use windows::Win32::Foundation::HANDLE;
-    use windows::Win32::System::DataExchange::{
-        CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
-    };
+    use windows::Win32::System::DataExchange::{CloseClipboard, EmptyClipboard, SetClipboardData};
     use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
     const CF_UNICODETEXT: u32 = 13;
     let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
     unsafe {
-        if OpenClipboard(None).is_err() {
+        if !open_clipboard() {
             return false;
         }
         let ok = (|| {
@@ -1965,12 +1986,16 @@ fn set_pc_clipboard_text(text: &str) -> bool {
             let g = GlobalAlloc(GMEM_MOVEABLE, wide.len() * 2).ok()?;
             let p = GlobalLock(g) as *mut u16;
             if p.is_null() {
+                let _ = windows::Win32::Foundation::GlobalFree(Some(g));
                 return None;
             }
             std::ptr::copy_nonoverlapping(wide.as_ptr(), p, wide.len());
             let _ = GlobalUnlock(g);
-            // The clipboard owns the memory after this.
-            SetClipboardData(CF_UNICODETEXT, Some(HANDLE(g.0))).ok()?;
+            // The clipboard owns the memory after this (ours to free if it refuses).
+            if SetClipboardData(CF_UNICODETEXT, Some(HANDLE(g.0))).is_err() {
+                let _ = windows::Win32::Foundation::GlobalFree(Some(g));
+                return None;
+            }
             Some(())
         })()
         .is_some();
@@ -1979,22 +2004,40 @@ fn set_pc_clipboard_text(text: &str) -> bool {
     }
 }
 
+/// Opens the clipboard, retrying briefly: clipboard managers hold it for a moment.
+fn open_clipboard() -> bool {
+    use windows::Win32::System::DataExchange::OpenClipboard;
+    for i in 0..5 {
+        if unsafe { OpenClipboard(None) }.is_ok() {
+            return true;
+        }
+        if i < 4 {
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+    false
+}
+
 /// Text on the Windows clipboard (Ctrl+V to Android), `None` without text.
 fn pc_clipboard_text() -> Option<String> {
     use windows::Win32::Foundation::HGLOBAL;
-    use windows::Win32::System::DataExchange::{CloseClipboard, GetClipboardData, OpenClipboard};
-    use windows::Win32::System::Memory::{GlobalLock, GlobalUnlock};
+    use windows::Win32::System::DataExchange::{CloseClipboard, GetClipboardData};
+    use windows::Win32::System::Memory::{GlobalLock, GlobalSize, GlobalUnlock};
     const CF_UNICODETEXT: u32 = 13;
     unsafe {
-        OpenClipboard(None).ok()?;
+        if !open_clipboard() {
+            return None;
+        }
         let text = GetClipboardData(CF_UNICODETEXT).ok().and_then(|h| {
             let g = HGLOBAL(h.0);
             let p = GlobalLock(g) as *const u16;
             if p.is_null() {
                 return None;
             }
+            // Never read past the block, even when the owner left out the terminator.
+            let max = GlobalSize(g) / 2;
             let mut n = 0;
-            while *p.add(n) != 0 {
+            while n < max && *p.add(n) != 0 {
                 n += 1;
             }
             let s = String::from_utf16_lossy(std::slice::from_raw_parts(p, n));
@@ -3139,6 +3182,8 @@ fn tray_labels(p: &Prefs) -> (String, String) {
 fn hide_to_tray(ui: &AppWindow) {
     use windows::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_HIDE};
     if let Some(h) = hwnd_of(ui.window()) {
+        // A hidden window in Ghost mode would need two tray clicks to come back.
+        ghost::leave(h, ui.get_prefs().on_top);
         // A one-off "Minimize to tray" from the close dialog needs the icon too.
         let p = ui.get_prefs();
         let (open, quit) = tray_labels(&p);
@@ -3189,7 +3234,7 @@ fn sync_start_with_windows(ui: &AppWindow) {
     if p.start_with_windows != on {
         p.start_with_windows = on;
         prefs::save(&p);
-        ui.set_prefs(p);
+        set_prefs(ui, p);
     }
 }
 
@@ -3364,6 +3409,13 @@ fn main() -> Result<(), slint::PlatformError> {
     // v2.5.1: `ZenLink.exe --android-app …` is one Android app in its own
     // window (no backend, no tray, no single-instance check).
     let args: Vec<String> = std::env::args().skip(1).collect();
+    // Setup.exe (this exe under another name) and the uninstaller (R61).
+    if let Some(m) = install::mode(&args) {
+        if matches!(m, install::Mode::Install { .. }) {
+            init_log_named("setup.log");
+        }
+        std::process::exit(install::run(m));
+    }
     if args.first().map(String::as_str) == Some(appwin::ARG) {
         init_log_named(APP_LOG_FILE_NAME);
         let Some(a) = appwin::AppArgs::parse(&args) else {
@@ -3690,13 +3742,14 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let weak = ui.as_weak();
         let (t, g) = (touch_on.clone(), gestures_on.clone());
-        let last = std::cell::RefCell::new(ui.get_prefs());
+        LAST_PREFS.with_borrow_mut(|l| *l = Some(ui.get_prefs()));
         ui.on_prefs_changed(move |mut p| {
+            let last = LAST_PREFS
+                .with_borrow(|l| l.clone())
+                .unwrap_or_else(|| p.clone());
             // Video profile logic (phase A5), then store for the device.
-            devprofiles::normalize(&last.borrow(), &mut p);
-            if p.start_with_windows != last.borrow().start_with_windows
-                && !test_mode
-                && !updater::is_store()
+            devprofiles::normalize(&last, &mut p);
+            if p.start_with_windows != last.start_with_windows && !test_mode && !updater::is_store()
             {
                 tray::set_start_with_windows(p.start_with_windows, true);
             }
@@ -3706,10 +3759,9 @@ fn main() -> Result<(), slint::PlatformError> {
                 &open,
                 &quit,
             );
-            let android_changed = devprofiles::picture_of(&p)
-                != devprofiles::picture_of(&last.borrow())
-                || p.android_profile != last.borrow().android_profile;
-            *last.borrow_mut() = p.clone();
+            let android_changed = devprofiles::picture_of(&p) != devprofiles::picture_of(&last)
+                || p.android_profile != last.android_profile;
+            LAST_PREFS.with_borrow_mut(|l| *l = Some(p.clone()));
             if let Some(ui) = weak.upgrade() {
                 if ui.get_prefs() != p {
                     ui.set_prefs(p.clone());
@@ -3825,7 +3877,7 @@ fn main() -> Result<(), slint::PlatformError> {
             let mut p = ui.get_prefs();
             p.platform = platform.clone();
             p.remember_platform = remember;
-            ui.set_prefs(p.clone());
+            set_prefs(&ui, p.clone());
             prefs::save(&p);
             // Before the backend answered, its settings file tells whether
             // the Apple chooser is needed.
@@ -4178,7 +4230,7 @@ fn main() -> Result<(), slint::PlatformError> {
                         _ => "auto",
                     }
                     .into();
-                    ui.set_prefs(p.clone());
+                    set_prefs(&ui, p.clone());
                     prefs::save(&p);
                     APP.with_borrow_mut(|a| a.fitted = None);
                 }

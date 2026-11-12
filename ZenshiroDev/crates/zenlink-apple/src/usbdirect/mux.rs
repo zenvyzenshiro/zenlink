@@ -302,7 +302,14 @@ fn read_loop(mux: &Shared, ep_in: u8, version: Sender<()>) {
         while buf.len() >= 8 {
             let proto = u32::from_be_bytes(buf[0..4].try_into().unwrap());
             let len = u32::from_be_bytes(buf[4..8].try_into().unwrap()) as usize;
-            if len < 8 || buf.len() < len {
+            if !(8..=1 << 20).contains(&len) {
+                // Not a usbmux packet: the stream cannot be followed, end it (closes the streams).
+                log::warn!("usbmux: bad packet length {len}");
+                buf.clear();
+                mux.stop.store(true, Relaxed);
+                break;
+            }
+            if buf.len() < len {
                 break;
             }
             let packet: Vec<u8> = buf.drain(..len).collect();

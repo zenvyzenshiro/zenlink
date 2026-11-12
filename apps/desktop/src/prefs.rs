@@ -212,7 +212,12 @@ pub fn from_value(v: &Value) -> Prefs {
         _ => f("glassThick", &mut p.glass, 0.0, 100.0),
     }
     b("lens", &mut p.lens);
-    s("lang", &mut p.lang, &["id", "en"]);
+    // Built-in languages and any `<code>.po` in a lang folder (Settings lists those too).
+    if let Some(x) = v["lang"].as_str() {
+        if ["id", "en"].contains(&x) || crate::i18n::languages().iter().any(|(c, _)| c == x) {
+            p.lang = x.into();
+        }
+    }
     s("fit", &mut p.fit, &["contain", "cover", "fill"]);
     b("fitWindow", &mut p.fit_window);
     s(
@@ -307,10 +312,23 @@ pub fn from_value(v: &Value) -> Prefs {
 
 pub fn save(p: &Prefs) {
     if let Some(f) = path() {
-        let _ = std::fs::write(
-            f,
-            serde_json::to_vec_pretty(&to_value(p)).unwrap_or_default(),
+        write_atomic(
+            &f,
+            &serde_json::to_vec_pretty(&to_value(p)).unwrap_or_default(),
         );
+    }
+}
+
+/// Writes `f` through a temporary file and a rename, so a crash or power cut mid-write never
+/// leaves an empty file (which would reset every setting on the next start).
+pub fn write_atomic(f: &std::path::Path, body: &[u8]) {
+    let mut tmp = f.as_os_str().to_owned();
+    tmp.push(".tmp");
+    if std::fs::write(&tmp, body)
+        .and_then(|_| std::fs::rename(&tmp, f))
+        .is_err()
+    {
+        log::warn!("could not save {}", f.display());
     }
 }
 

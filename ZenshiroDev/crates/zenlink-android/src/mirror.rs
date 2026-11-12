@@ -446,7 +446,11 @@ impl Mirror {
         let device_name = read_device_meta(&mut video)?;
         let video = VideoReader::new(video)?;
         let audio = match opts.audio {
-            true => open_audio(it.next().expect("audio socket"))?,
+            // No sound is better than no picture: a failed audio socket only loses the sound.
+            true => open_audio(it.next().expect("audio socket")).unwrap_or_else(|e| {
+                log::warn!("android: audio did not open ({e}); mirroring without sound");
+                None
+            }),
             false => None,
         };
         for s in &session.sockets {

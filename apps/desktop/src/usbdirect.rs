@@ -202,7 +202,8 @@ pub fn overlay(st: &mut Value) {
     };
     let wanted = conn("active") == Some("usbdirect") && conn("link") != Some("wireless");
     if WANTED.swap(wanted, Relaxed) && !wanted {
-        stop(); // the mode changed away
+        // The mode changed away. Off this (state poll) thread: stop waits up to 10 s.
+        std::thread::spawn(stop);
     }
     if !wanted {
         return;

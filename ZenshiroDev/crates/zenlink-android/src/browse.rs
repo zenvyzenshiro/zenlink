@@ -303,7 +303,7 @@ pub fn list(client: &AdbClient, target: &Target, path: &str, hidden: bool) -> Re
 
 /// A local path that does not exist yet: `name`, `name (1)`, ...
 pub fn free_local(dir: &Path, name: &str) -> PathBuf {
-    let name = safe_name(name).unwrap_or_else(|| "file".into());
+    let name = crate::files::windows_safe(safe_name(name).unwrap_or_else(|| "file".into()));
     let mut taken = |n: &str| -> std::result::Result<bool, AdbError> { Ok(dir.join(n).exists()) };
     let n = free_name(&name, &mut taken).unwrap_or(name);
     dir.join(n)
@@ -421,7 +421,12 @@ pub fn delete(client: &AdbClient, target: &Target, path: &str) -> Result<()> {
     let inside = ["/sdcard/", "/storage/emulated/0/"]
         .iter()
         .any(|root| p.starts_with(root) && p.len() > root.len());
-    if !inside || p.contains("/../") || p.ends_with("/..") {
+    // "." and ".." segments or "//" could point back at the storage root itself.
+    let odd = p
+        .split('/')
+        .skip(1)
+        .any(|seg| seg.is_empty() || seg == "." || seg == "..");
+    if !inside || odd {
         return Err(AdbError::Protocol(
             "only files in the phone's storage can be deleted".into(),
         ));

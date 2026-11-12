@@ -25,6 +25,8 @@ use crate::{samples, Shared};
 
 pub(crate) fn spawn(shared: Arc<Shared>) -> std::result::Result<JoinHandle<()>, String> {
     let (tx, rx) = std::sync::mpsc::channel();
+    let stopper = shared.clone();
+    let shared_stop = &stopper.stop;
     let t = std::thread::Builder::new()
         .name("zenlink-audio".into())
         .spawn(move || {
@@ -72,7 +74,11 @@ pub(crate) fn spawn(shared: Arc<Shared>) -> std::result::Result<JoinHandle<()>, 
             let _ = t.join();
             Err(e)
         }
-        Err(_) => Err("the sound output did not open".into()),
+        Err(_) => {
+            // The thread may still open later: make it stop instead of playing on its own.
+            shared_stop.store(true, Relaxed);
+            Err("the sound output did not open".into())
+        }
     }
 }
 
@@ -106,15 +112,26 @@ impl Stream {
             // 0 = the engine's own period (about 10 ms): the lowest shared-mode latency.
             client.Initialize(AUDCLNT_SHAREMODE_SHARED, flags, 0, 0, &wfx, None)?;
             let event = CreateEventW(None, false, false, None)?;
-            client.SetEventHandle(event)?;
-            let size = client.GetBufferSize()?;
-            let render: IAudioRenderClient = client.GetService()?;
+            let rest = (|| -> Result<_> {
+                client.SetEventHandle(event)?;
+                let size = client.GetBufferSize()?;
+                let render: IAudioRenderClient = client.GetService()?;
+                // Start with a buffer of silence.
+                render.GetBuffer(size)?;
+                render.ReleaseBuffer(size, AUDCLNT_BUFFERFLAGS_SILENT.0 as u32)?;
+                client.Start()?;
+                Ok((size, render))
+            })();
+            let (size, render) = match rest {
+                Ok(v) => v,
+                Err(e) => {
+                    // A failed open is retried every 300 ms: do not leak an event each time.
+                    let _ = CloseHandle(event);
+                    return Err(e);
+                }
+            };
             let stream_latency = client.GetStreamLatency().unwrap_or(0) as f32 / 10_000.0;
             let latency_ms = stream_latency + size as f32 * 1000.0 / RATE as f32;
-            // Start with a buffer of silence.
-            render.GetBuffer(size)?;
-            render.ReleaseBuffer(size, AUDCLNT_BUFFERFLAGS_SILENT.0 as u32)?;
-            client.Start()?;
             Ok(Self {
                 client,
                 render,

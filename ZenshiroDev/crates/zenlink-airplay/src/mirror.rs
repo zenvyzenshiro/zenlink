@@ -114,7 +114,8 @@ pub async fn run<R: AsyncRead + Unpin>(mut r: R, key: [u8; 16], iv: [u8; 16], si
             (t0, frames, bytes, gap) = (now, 0, 0, 0.0);
         }
         let size = u32::from_le_bytes(header[..4].try_into().unwrap()) as usize;
-        if size > 64 << 20 {
+        // A 4K key frame is a few MiB; more is a broken or hostile stream.
+        if size > 16 << 20 {
             log::warn!("airplay: video packet of {size} bytes; connection dropped");
             return;
         }

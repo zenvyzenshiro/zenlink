@@ -83,8 +83,8 @@ pub fn product_name(product_type: &str) -> Option<&'static str> {
 /// `family` is "iPhone", "iPad" or anything else (then the family itself is returned).
 pub fn series_name(udid: &str, family: &str) -> String {
     let id = udid.replace('-', "");
-    let cpid = if id.len() >= 8 && id.starts_with("0000") {
-        id[4..8].to_uppercase()
+    let cpid = if id.starts_with("0000") {
+        id.get(4..8).unwrap_or_default().to_uppercase()
     } else {
         String::new()
     };
