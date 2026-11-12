@@ -2095,174 +2095,186 @@ msgstr ""
 msgid "Retrying… ({_0})"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2989
+#: apps/desktop/src/main.rs:2978
+msgid "Turn on mouse control on this phone"
+msgstr ""
+
+#: apps/desktop/src/main.rs:2979
+msgid "Xiaomi, Redmi and POCO phones (MIUI / HyperOS) ignore the mouse and keyboard until you allow it: on the phone open Settings › Additional settings › Developer options and turn on \"USB debugging (Security settings)\" (it may ask for a Mi account and a SIM card). Then press Stop and Start again."
+msgstr ""
+
+#: apps/desktop/src/main.rs:2980
+msgid "Open Developer options on the phone"
+msgstr ""
+
+#: apps/desktop/src/main.rs:3001
 msgid "Ghost mode off"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3003
+#: apps/desktop/src/main.rs:3015
 msgid "Ghost mode: clicks go to the app behind. Press {key} again (or click the tray icon) to leave."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3020
+#: apps/desktop/src/main.rs:3032
 msgid "This shortcut needs Apple Driver mode while mirroring."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3027
+#: apps/desktop/src/main.rs:3039
 msgid "Sound on the PC: off (Alt+M)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3029
+#: apps/desktop/src/main.rs:3041
 msgid "Sound on the PC: on (Alt+M)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3046
+#: apps/desktop/src/main.rs:3058
 msgid "Rotation: {label}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3062
+#: apps/desktop/src/main.rs:3074
 msgid "Copy history cleared. The next Alt+C starts fresh."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3071
+#: apps/desktop/src/main.rs:3083
 msgid "Typing {n} characters on the device."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3073
+#: apps/desktop/src/main.rs:3085
 msgid "The PC clipboard has no text."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3111
+#: apps/desktop/src/main.rs:3123
 msgid "The chosen encoder failed; now using {using}. Your choice is kept."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3122
+#: apps/desktop/src/main.rs:3134
 msgid "Open ZenLink"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3225
+#: apps/desktop/src/main.rs:3237
 msgid "Checking for updates…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3235
+#: apps/desktop/src/main.rs:3247
 msgid "ZenLink is up to date."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3246
+#: apps/desktop/src/main.rs:3258
 msgid "Other edition: v{v}. Installs as a separate app; settings do not move over."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3248
+#: apps/desktop/src/main.rs:3260
 msgid "New version available: v{v}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3255
+#: apps/desktop/src/main.rs:3267
 msgid "ZenLink v{v} is available. Open Settings › Updates."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3263
+#: apps/desktop/src/main.rs:3275
 msgid "Could not check: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3299
+#: apps/desktop/src/main.rs:3311
 msgid "Failed: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3305
+#: apps/desktop/src/main.rs:3317
 msgid "Downloading {_0}…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3336
+#: apps/desktop/src/main.rs:3348
 msgid "The other edition's installer is open."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3344
+#: apps/desktop/src/main.rs:3356
 msgid "Update failed: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3506
+#: apps/desktop/src/main.rs:3518
 msgid "Pick an iPhone or iPad first. Plug it in with the cable and unlock it; it shows up in the list."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3541
+#: apps/desktop/src/main.rs:3553
 msgid "{name} is not connected. Plug in the cable (or join the same Wi-Fi), unlock it, then press Start."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3563
+#: apps/desktop/src/main.rs:3575
 msgid "Waiting for administrator permission…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3626
+#: apps/desktop/src/main.rs:3642
 msgid "Restarting the ZenLink service…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3644
+#: apps/desktop/src/main.rs:3660
 msgid "Restarting the connection…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3724
+#: apps/desktop/src/main.rs:3740
 msgid "Applying the Android settings…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3915
+#: apps/desktop/src/main.rs:3931
 msgid "Could not install adb. Check the internet connection and try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4215
+#: apps/desktop/src/main.rs:4231
 msgid "The mode was not saved, try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4236
+#: apps/desktop/src/main.rs:4252
 msgid "Switching to Wi-Fi…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4238
+#: apps/desktop/src/main.rs:4254
 msgid "Switching to the cable…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4252
+#: apps/desktop/src/main.rs:4268
 msgid "The connection could not be changed, try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4342
+#: apps/desktop/src/main.rs:4358
 msgid "Setting up Wi-Fi…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4344
+#: apps/desktop/src/main.rs:4360
 msgid "Checking drivers…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4370
+#: apps/desktop/src/main.rs:4386
 msgid "Wi-Fi is ready. You can unplug the cable."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4372
+#: apps/desktop/src/main.rs:4388
 msgid "Wi-Fi could not be set up."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4379
+#: apps/desktop/src/main.rs:4395
 msgid "Drivers checked."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4479
+#: apps/desktop/src/main.rs:4495
 msgid "Nothing was copied on the phone."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4481
+#: apps/desktop/src/main.rs:4497
 msgid "Copied from the phone. Paste it on the PC with Ctrl+V."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4483
+#: apps/desktop/src/main.rs:4499
 msgid "Text copied on the phone, but Windows didn't allow it on the clipboard."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4605
+#: apps/desktop/src/main.rs:4621
 msgid "Unlocking the device…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4915
+#: apps/desktop/src/main.rs:4931
 msgid "No picture from the iPhone/iPad yet. Unlock the device and press Restart. If it stays empty, send the logs (Settings › About › Open log folder)."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4929
+#: apps/desktop/src/main.rs:4945
 msgid "sound"
 msgstr ""

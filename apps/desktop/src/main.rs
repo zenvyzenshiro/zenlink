@@ -2969,6 +2969,18 @@ fn android_tick(ui: &AppWindow) {
     if live {
         android_session_ok(ui, &st, &using);
     }
+    let was_blocked =
+        APP.with_borrow(|a| a.android_shown.as_ref().is_some_and(|s| s.input_blocked));
+    if st.input_blocked && !was_blocked {
+        open_sheet(
+            ui,
+            "mi-input",
+            i18n::tr("Turn on mouse control on this phone"),
+            i18n::tr("Xiaomi, Redmi and POCO phones (MIUI / HyperOS) ignore the mouse and keyboard until you allow it: on the phone open Settings › Additional settings › Developer options and turn on \"USB debugging (Security settings)\" (it may ask for a Mi account and a SIM card). Then press Stop and Start again."),
+            i18n::tr("Open Developer options on the phone"),
+            i18n::tr("Later"),
+        );
+    }
     APP.with_borrow_mut(|a| {
         if live != a.android_live {
             a.android_live = live;
@@ -3620,6 +3632,10 @@ fn main() -> Result<(), slint::PlatformError> {
                 let _ = std::process::Command::new("explorer.exe")
                     .arg("ms-windows-store://pdp/?productid=9N4WGH0Z6VHQ")
                     .spawn();
+            } else if kind == "mi-input" {
+                if let Some(sh) = APP.with_borrow(|a| a.android.clone()) {
+                    sh.open_developer_options();
+                }
             } else if let Some(action) = kind.strip_prefix("drv:") {
                 run_driver(&ui, &api, action.to_string());
             } else if kind == "restart" {

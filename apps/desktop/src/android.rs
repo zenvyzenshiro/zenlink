@@ -78,7 +78,21 @@ pub struct Status {
     pub encoder: String,
     /// The attempt is not the first of the plan (Smart Encoder fallback).
     pub fell_back: bool,
+    /// Xiaomi / Redmi / POCO (MIUI, HyperOS) with "USB debugging (Security settings)" off:
+    /// the phone ignores mouse and keyboard input from adb.
+    pub input_blocked: bool,
 }
+
+/// Whether the output of [`MI_INPUT_PROPS`] says the phone blocks adb input: a MIUI or
+/// HyperOS version is set, and `persist.security.adbinput` is not 1.
+fn mi_input_blocked(out: &str) -> bool {
+    let l: Vec<&str> = out.lines().map(str::trim).collect();
+    let get = |i: usize| l.get(i).copied().unwrap_or("");
+    (!get(0).is_empty() || !get(1).is_empty()) && get(2) != "1"
+}
+
+const MI_INPUT_PROPS: &str = "getprop ro.miui.ui.version.name; getprop ro.mi.os.version.name; \
+                              getprop persist.security.adbinput";
 
 /// Shared between the decoder thread (source) and the window.
 #[derive(Default)]
@@ -105,6 +119,8 @@ pub struct Shared {
     held: Mutex<Option<(CodecInfo, Box<dyn RecordStream>)>>,
     /// Set by a return from parking, for the next open.
     resuming: AtomicBool,
+    /// adb and serial of the running session (to open settings on the phone).
+    adb: Mutex<Option<(AdbClient, String)>>,
 }
 
 /// The session the window's mouse and keyboard go to.
@@ -321,6 +337,19 @@ impl Shared {
             _ => return false,
         }
         true
+    }
+
+    /// Opens Developer options on the phone (for "USB debugging (Security settings)").
+    pub fn open_developer_options(&self) {
+        let Some((client, serial)) = self.adb.lock().unwrap().clone() else {
+            return;
+        };
+        std::thread::spawn(move || {
+            let cmd = "am start -a android.settings.APPLICATION_DEVELOPMENT_SETTINGS";
+            if let Err(e) = client.shell(&Target::Serial(&serial), cmd, 4096) {
+                log::warn!("android: open developer options: {e}");
+            }
+        });
     }
 
     /// Pastes the PC clipboard on the device (sets its clipboard, then pastes).
@@ -736,7 +765,25 @@ impl VideoSource for DeviceSource {
                 s.device = name;
             }
             s.error.clear();
+            s.input_blocked = false;
         });
+        *self.shared.adb.lock().unwrap() = Some((self.client.clone(), self.serial.clone()));
+        if self.options.control {
+            let (client, serial, sh) = (
+                self.client.clone(),
+                self.serial.clone(),
+                self.shared.clone(),
+            );
+            std::thread::spawn(move || {
+                let out = client
+                    .shell(&Target::Serial(&serial), MI_INPUT_PROPS, 512)
+                    .unwrap_or_default();
+                if mi_input_blocked(&String::from_utf8_lossy(&out)) {
+                    log::warn!("android: MIUI/HyperOS with USB debugging (Security settings) off: input is blocked");
+                    sh.set(|s| s.input_blocked = true);
+                }
+            });
+        }
         let Mirror {
             video,
             audio,
@@ -1525,6 +1572,18 @@ mod tests {
             "F1"
         );
         assert_eq!(key_input("", false, false, false), KeyInput::Ignore);
+    }
+
+    #[test]
+    fn xiaomi_input_check() {
+        assert!(
+            mi_input_blocked("\nOS2.0\n\n"),
+            "HyperOS, security setting off"
+        );
+        assert!(mi_input_blocked("V140\n\n0\n"), "MIUI, off");
+        assert!(!mi_input_blocked("V140\n\n1\n"), "MIUI, on");
+        assert!(!mi_input_blocked("\n\n\n"), "not Xiaomi");
+        assert!(!mi_input_blocked(""), "no answer");
     }
 
     #[test]

@@ -14,6 +14,7 @@ Full notes for each version are on the [Releases](https://github.com/zenvyzenshi
 - **Black window on iOS 27 (Apple Driver):** iOS 27 sends H.265 only. When Windows has no HEVC decoder, ZenLink now explains it and opens "HEVC Video Extensions" in the Microsoft Store.
 - **OBS / TikTok LIVE Studio Game Capture showed the whole window:** the animated background kept the window redrawing, and Game Capture hooked it instead of the picture. The background now pauses while ZenLink is in the background.
 - **Stability:** Stop now ends iOS 17–26 (Hybrid) sessions; a damaged `airplay.json` no longer crashes ZenLink; Android and Apple connections no longer hang without a timeout; the picture comes back after a slow Wi-Fi start; Wi-Fi setup no longer asks the device again every minute.
+- **Mouse did nothing on Xiaomi, Redmi and POCO phones** (for example POCO X6 5G): MIUI / HyperOS ignore input from adb until "USB debugging (Security settings)" is on. ZenLink now sees this, explains it and opens Developer options on the phone.
 - **Smart App Control (Windows 11):** the website explains why unsigned installers are blocked.
 
 ### Removed
