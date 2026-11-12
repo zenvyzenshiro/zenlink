@@ -228,6 +228,8 @@
         };
         compare(setup, oldPick(/Setup\.exe$/i), "setup");
         compare(portable, oldPick(/Portable\.exe$/i), "portable");
+        const direct = pick(/Setup-Direct\.exe$/i);
+        if (direct) document.getElementById("f-direct").href = direct.browser_download_url;
         if (setup) {
           document.getElementById("f-setup").href = setup.browser_download_url;
           if (/^sha256:/.test(setup.digest || "")) {

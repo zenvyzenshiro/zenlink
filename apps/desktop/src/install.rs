@@ -69,7 +69,9 @@ fn parse(exe_name: &str, args: &[String], portable: bool) -> Option<Mode> {
     if has(args, "--uninstall") {
         return Some(Mode::Uninstall { silent, elevated });
     }
-    let setup_name = exe_name.to_ascii_lowercase().ends_with("-setup.exe");
+    // "-Setup-Direct.exe", also as a browser renames it ("... (1).exe").
+    let lower = exe_name.to_ascii_lowercase();
+    let setup_name = lower.contains("-setup") && lower.ends_with(".exe");
     (portable && (setup_name || has(args, "--install") || elevated)).then(|| Mode::Install {
         silent,
         relaunch: has(args, "/ZLRELAUNCH=1"),
@@ -553,6 +555,8 @@ mod tests {
                 elevated: false
             })
         );
+        assert!(parse("ZenLink-v2.5.14-Setup-Direct.exe", &none, true).is_some());
+        assert!(parse("ZenLink-v2.5.14-Setup-Direct (1).exe", &none, true).is_some());
         assert_eq!(parse("ZenLink-v2.5.14-Setup.exe", &none, false), None);
         assert_eq!(parse("ZenLink-v2.5.14-Portable.exe", &none, true), None);
         assert_eq!(parse("ZenLink.exe", &none, true), None);

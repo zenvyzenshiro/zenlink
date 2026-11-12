@@ -163,6 +163,9 @@ pub struct Release {
     pub notes: String,
     pub page: String,
     pub setup: Option<Asset>,
+    /// `-Setup-Direct.exe` (2.5.14+): the portable exe that installs itself, for PCs where
+    /// Smart App Control blocks the Inno Setup.
+    pub setup_direct: Option<Asset>,
     pub portable: Option<Asset>,
 }
 
@@ -232,6 +235,7 @@ pub fn release(v: &Value) -> Option<Release> {
             .unwrap_or(RELEASES_PAGE)
             .to_string(),
         setup: find("-Setup.exe"),
+        setup_direct: find("-Setup-Direct.exe"),
         portable: find("-Portable.exe"),
         tag,
         version,
@@ -331,7 +335,7 @@ mod tests {
         json!({
             "tag_name": tag, "prerelease": pre, "draft": false,
             "body": "## Fixes\n- **Faster** start\n", "html_url": format!("https://github.com/{REPO}/releases/tag/{tag}"),
-            "assets": [asset_json(tag, "Setup"), asset_json(tag, "Portable"), {"name": "x.zip", "size": 1,
+            "assets": [asset_json(tag, "Setup"), asset_json(tag, "Portable"), asset_json(tag, "Setup-Direct"), {"name": "x.zip", "size": 1,
                 "browser_download_url": format!("{DOWNLOAD_PREFIX}{tag}/x.zip")}],
         })
     }
@@ -354,6 +358,7 @@ mod tests {
                 let s = r.setup.unwrap();
                 assert_eq!(s.name, "ZenLink-v2.5.1-beta.2-Setup.exe");
                 assert_eq!(s.sha256, "ab".repeat(32));
+                assert_eq!(r.setup_direct.unwrap().name, "ZenLink-v2.5.1-beta.2-Setup-Direct.exe");
                 assert!(r.portable.is_some());
             }
             o => panic!("{o:?}"),

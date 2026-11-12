@@ -3,7 +3,8 @@
   Builds the ZenLink release files into out\release\ (work folders: out\build, out\dist):
 
     ZenLink-v<ver>-Portable.exe           one ZenLink.exe, nothing to install
-    ZenLink-v<ver>-Setup.exe              the same exe: named *-Setup.exe it installs itself (R61)
+    ZenLink-v<ver>-Setup.exe              installer (Inno Setup 6)
+    ZenLink-v<ver>-Setup-Direct.exe       the portable exe that installs itself (R61), if SAC blocks Setup
     ZenLink-v<ver>-Manual.zip             manual install: ZenLink.exe + source + Start ZenLink.bat
 
   ZenLink is one Rust program (apps\desktop, ZenshiroDev\crates\); the Python backend was
@@ -123,12 +124,28 @@ if ($LASTEXITCODE) { throw "cargo (portable) failed" }
 Copy-Item (Join-Path $portableTarget "$cargoProfile\ZenLink.exe") (Join-Path $release "ZenLink-v$Version-Portable.exe")
 Invoke-Sign @(Join-Path $release "ZenLink-v$Version-Portable.exe")
 
-Write-Host "[3/3] Setup.exe and the source zip..." -ForegroundColor Magenta
-# Setup.exe is the portable exe under another name: started as *-Setup.exe it installs itself
-# (apps\desktop\src\install.rs). No installer engine: Inno Setup's Setup.tmp was new in every
-# build, so Smart App Control blocked it for having no reputation (B-63).
-Copy-Item (Join-Path $release "ZenLink-v$Version-Portable.exe") (Join-Path $release "ZenLink-v$Version-Setup.exe")
-if (git status --porcelain) { Write-Warning "Uncommitted changes: Manual.zip holds the last commit (HEAD), not the working tree." }$srcZip = Join-Path $release "ZenLink-v$Version-Manual.zip"
+Write-Host "[3/3] Building the installers and the source zip..." -ForegroundColor Magenta
+$iscc = @(
+    "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+    "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+    "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+) | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $iscc) { throw "Inno Setup 6 not found (winget install JRSoftware.InnoSetup)." }
+# Top-level entries of the install folder: the next Setup removes exactly
+# these before copying (clean update, ZenshiroDev/tooling/windows/packaging/ZenLink.iss).
+# lang\ is left out: languages a user added there survive an update (Setup
+# still overwrites the files it ships).
+$skip = @("Start ZenLink.bat", "run.bat", "Create-Desktop-Shortcut.bat", "Uninstall-ZenLink.bat", "portable.txt", "install-manifest.txt", "lang")
+$names = @(Get-ChildItem -Force $app | Where-Object { $skip -notcontains $_.Name } | ForEach-Object { $_.Name }) + "install-manifest.txt"
+[IO.File]::WriteAllLines((Join-Path $app "install-manifest.txt"), [string[]]$names)
+& $iscc "/DAppVersion=$Version" "/DAppVersionNum=$VersionNum" "/DSourceDir=$app" "/O$release" "ZenshiroDev\tooling\windows\packaging\ZenLink.iss"
+if ($LASTEXITCODE) { throw "Inno Setup failed" }
+Invoke-Sign @(Get-ChildItem $release -Filter "*-Setup.exe" | ForEach-Object FullName)
+# Setup-Direct.exe: the portable exe under another name installs itself (apps\desktop\src\install.rs).
+# Twice the size, but no Setup.tmp: for PCs where Smart App Control blocks Inno's (B-63).
+Copy-Item (Join-Path $release "ZenLink-v$Version-Portable.exe") (Join-Path $release "ZenLink-v$Version-Setup-Direct.exe")
+if (git status --porcelain) { Write-Warning "Uncommitted changes: Manual.zip holds the last commit (HEAD), not the working tree." }
+$srcZip = Join-Path $release "ZenLink-v$Version-Manual.zip"
 git archive --format=zip --prefix="ZenLink-v$Version/" -o $srcZip HEAD
 # Ready-built ZenLink.exe next to Start ZenLink.bat (no Rust toolchain needed).
 # adb is not packed: ZenLink downloads Google's official copy on request

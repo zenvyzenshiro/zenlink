@@ -290,6 +290,11 @@ pub fn check(channel: Channel) -> Result<Offer, String> {
 /// The file a user of this install kind needs from `r`.
 pub fn asset_for(kind: Kind, r: &Release) -> Option<&Asset> {
     match kind {
+        // A copy installed by Setup-Direct (portable build) updates the same way, so a PC
+        // where Smart App Control blocks Inno's Setup.tmp keeps updating.
+        Kind::Installed if cfg!(feature = "portable") => {
+            r.setup_direct.as_ref().or(r.setup.as_ref())
+        }
         Kind::Installed => r.setup.as_ref(),
         Kind::Portable => r.portable.as_ref(),
         Kind::Source | Kind::Store => None,
