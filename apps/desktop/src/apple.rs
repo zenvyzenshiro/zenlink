@@ -572,7 +572,9 @@ impl Engine {
         }
         let me = self.clone();
         self.rt.spawn(async move {
-            let mut wifi_at = Instant::now() - WIFI_EVERY;
+            let mut wifi_at = Instant::now()
+                .checked_sub(WIFI_EVERY)
+                .unwrap_or_else(Instant::now);
             loop {
                 me.refresh_usb().await;
                 if wifi_at.elapsed() >= WIFI_EVERY {
@@ -586,11 +588,18 @@ impl Engine {
     }
 
     async fn refresh_usb(&self) {
-        let list = link::usb_devices().await.unwrap_or_default();
+        // A hung usbmuxd/lockdown call must not stall the device list for good.
+        let list = tokio::time::timeout(Duration::from_secs(10), link::usb_devices())
+            .await
+            .ok()
+            .and_then(Result::ok)
+            .unwrap_or_default();
         let mut usb = Vec::new();
         for (udid, paired) in list {
             if paired && !self.info.lock().unwrap().contains_key(&udid) {
-                if let Ok(i) = link::info(&udid).await {
+                if let Ok(Ok(i)) =
+                    tokio::time::timeout(Duration::from_secs(10), link::info(&udid)).await
+                {
                     let mut all = self.info.lock().unwrap();
                     all.insert(udid.clone(), i);
                     save_info(&all);
@@ -610,9 +619,11 @@ impl Engine {
     }
 
     /// Like PhoneLink V1: a trusted device on the cable gets Wi-Fi set up once (at most one try
-    /// a minute, never while casting), so it can later cast without the cable.
+    /// every 10 minutes, only in Apple Driver mode, never while casting), so it can later cast
+    /// without the cable. A failed RemotePairing (Trust declined, old iOS) writes no record, so a
+    /// short retry would ask the device again and again.
     fn auto_wifi(&self, usb: &[Dev]) {
-        if self.sessions.lock().unwrap().values().any(|s| s.live()) {
+        if !in_use() || self.sessions.lock().unwrap().values().any(|s| s.live()) {
             return;
         }
         let Some(dir) = wifi::record_dir() else {
@@ -622,7 +633,7 @@ impl Engine {
         for d in usb.iter().filter(|d| d.paired) {
             let due = tried
                 .get(&d.udid)
-                .is_none_or(|t| t.elapsed() >= Duration::from_secs(60));
+                .is_none_or(|t| t.elapsed() >= Duration::from_secs(600));
             if !due || dir.join(format!("remote_{}.plist", d.udid)).is_file() {
                 continue;
             }
@@ -690,7 +701,9 @@ impl Engine {
                 };
                 // The timer must be made inside the runtime: built outside it, it panics
                 // ("no reactor running") and, with panic = abort, ends ZenLink.
-                match rt.block_on(async { tokio::time::timeout(Duration::from_secs(20), ask).await }) {
+                match rt
+                    .block_on(async { tokio::time::timeout(Duration::from_secs(20), ask).await })
+                {
                     Ok(Ok(i)) if !i.product_type.is_empty() => {
                         log::info!("apple: learned {} ({}) over Wi-Fi", i.name, i.product_type);
                         let mut all = me.info.lock().unwrap();
@@ -1101,8 +1114,15 @@ impl Engine {
             }
         };
         // The watchers never end; the session ends with the stream.
+        // Stop also ends a Hybrid session, whose gate-only stream never calls back (no picture).
+        let stopped = async {
+            while !stop.load(Relaxed) {
+                tokio::time::sleep(Duration::from_millis(250)).await;
+            }
+        };
         let r: Result<(), String> = tokio::select! {
             r = video => r,
+            _ = stopped => Ok(()),
             _ = watch_rot => Ok(()),
             _ = watch_lock => Ok(()),
             _ = input => Ok(()),
@@ -1172,6 +1192,15 @@ impl VideoSource for AppleSource {
         loop {
             let au = match rx.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
                 Ok(au) => au,
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                    // Keep the channel for the next try (slow Wi-Fi), else the picture stays dead
+                    // until the device is taken off screen and back.
+                    let mut slot = self.engine.frames.lock().unwrap();
+                    if slot.is_none() && self.engine.is_shown(&udid) {
+                        *slot = Some((udid, rx));
+                    }
+                    return None;
+                }
                 Err(_) => return None,
             };
             if let Some(info) = codec_info(&au, screen) {

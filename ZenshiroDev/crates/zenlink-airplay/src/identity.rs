@@ -18,13 +18,17 @@ impl Identity {
         let path = dir.join("airplay.json");
         let read = || -> Option<Self> {
             let v: Value = serde_json::from_slice(&std::fs::read(&path).ok()?).ok()?;
-            let seed: [u8; 32] = crate::hex(v.get("seed")?.as_str().filter(|s| s.len() == 64)?)
-                .try_into()
-                .ok()?;
+            let seed: [u8; 32] = crate::hex(
+                v.get("seed")?
+                    .as_str()
+                    .filter(|s| s.len() == 64 && s.bytes().all(|b| b.is_ascii_hexdigit()))?,
+            )
+            .try_into()
+            .ok()?;
             let mac = v
                 .get("mac")?
                 .as_str()
-                .filter(|m| m.len() == 17)?
+                .filter(|m| m.len() == 17 && m.is_ascii())?
                 .to_string();
             Some(Self {
                 key: SigningKey::from_bytes(&seed),

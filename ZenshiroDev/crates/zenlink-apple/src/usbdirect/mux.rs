@@ -133,9 +133,17 @@ pub struct MuxStream {
     closed: bool,
 }
 
-impl MuxStream {
+/// The sending half of a [`MuxStream`], usable from another thread while the stream blocks in
+/// `recv` (sharing the stream behind one mutex starved the sender and lockdown timed out).
+#[derive(Clone)]
+pub struct MuxWriter {
+    mux: Arc<Shared>,
+    state: Arc<StreamState>,
+}
+
+impl MuxWriter {
     pub fn send(&self, data: &[u8]) -> Result<(), String> {
-        if self.closed || *self.state.connected.lock().unwrap() == Some(false) {
+        if *self.state.connected.lock().unwrap() == Some(false) {
             return Err("connection closed by the device".into());
         }
         for chunk in data.chunks(16 * 1024) {
@@ -144,6 +152,22 @@ impl MuxStream {
             s.0 = s.0.wrapping_add(chunk.len() as u32);
         }
         Ok(())
+    }
+}
+
+impl MuxStream {
+    pub fn writer(&self) -> MuxWriter {
+        MuxWriter {
+            mux: self.mux.clone(),
+            state: self.state.clone(),
+        }
+    }
+
+    pub fn send(&self, data: &[u8]) -> Result<(), String> {
+        if self.closed {
+            return Err("connection closed by the device".into());
+        }
+        self.writer().send(data)
     }
 
     /// Next data from the device; `Ok(None)` when it closed the connection.
@@ -304,7 +328,7 @@ fn dispatch(mux: &Shared, proto: u32, p: &[u8], version: &Sender<()>) {
     }
     let body = if mux.tx.lock().unwrap().version >= 2 {
         // The host sends 0xFEEDFACE; the device answers with 0xFACEFACE.
-        if !matches!(be32(8), Some(MAGIC | DEVICE_MAGIC)) {
+        if p.len() < 16 || !matches!(be32(8), Some(MAGIC | DEVICE_MAGIC)) {
             return;
         }
         mux.tx.lock().unwrap().rx_seq = u16::from_be_bytes([p[12], p[13]]); // acknowledge its counter

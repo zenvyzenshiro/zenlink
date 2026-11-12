@@ -333,7 +333,8 @@ pub async fn stream(
             }
         }
     };
-    let _ = client.stop_media_stream().await;
+    // The link may be dead already (cable out, Wi-Fi gone): never wait on it for long.
+    let _ = tokio::time::timeout(Duration::from_secs(3), client.stop_media_stream()).await;
     drop(audio_udp);
     result
 }

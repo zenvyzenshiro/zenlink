@@ -423,7 +423,9 @@ impl Mirror {
         }
         let mut handles = Vec::with_capacity(count);
         for s in &sockets {
-            s.set_read_timeout(None)?;
+            // Bounded until the headers arrived: a server that connects but never writes them
+            // must not block the start (Stop cannot interrupt it yet).
+            s.set_read_timeout(Some(Duration::from_secs(15)))?;
             s.set_nodelay(true)?;
             handles.push(s.try_clone()?);
         }
@@ -439,6 +441,9 @@ impl Mirror {
             true => open_audio(it.next().expect("audio socket"))?,
             false => None,
         };
+        for s in &session.sockets {
+            s.set_read_timeout(None)?;
+        }
         let control = match it.next() {
             Some(c) => {
                 Self::drain_device_messages(c.try_clone()?);

@@ -107,3 +107,18 @@ one-file exe.
   cannot be turned back on without reinstalling Windows. The reporter's test
   is the proof.
 - Users are never asked to turn SAC, Defender or other protections off.
+
+## 2.5.13: the installer itself is blocked (2026-11-12)
+
+Since 2.5.12 there is no Python service: ZenLink is one native `ZenLink.exe`
+(plus `zlaac.dll` and `playfair.dll`), so the `lzss`/`_MEI` cause above no
+longer applies. A user with SAC on reported a new block on the installer:
+"Part of this app has been blocked ... ZenLink-v2.5.13-Setup.tmp". Inno Setup
+copies itself to `%TEMP%\is-*\<name>.tmp` and runs from there; that copy is
+unsigned like the Setup exe, so SAC stops the installer before any ZenLink
+code runs. The installer extracts no other helper DLL at setup time.
+
+Nothing inside ZenLink can fix this: SAC trusts only a signature that chains
+to Microsoft's root program, or cloud reputation that a new release does not
+have yet. The Portable exe is unsigned too and is blocked the same way. The
+only fix is signing (see above). Until then the website FAQ says so plainly.

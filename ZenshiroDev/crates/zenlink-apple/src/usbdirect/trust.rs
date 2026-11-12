@@ -4,7 +4,7 @@
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering::Relaxed};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 
 use idevice::{lockdown::LockdownClient, pairing_file::PairingFile, Idevice};
@@ -70,18 +70,18 @@ pub fn check(stream: MuxStream, udid: &str) -> Result<Option<String>, String> {
         .enable_all()
         .build()
         .map_err(|e| e.to_string())?;
-    let stream = Arc::new(Mutex::new(stream));
+    let writer = stream.writer();
     let done = Arc::new(AtomicBool::new(false));
     let (ours, theirs) = tokio::io::duplex(1 << 16);
     let (mut from_lockdown, mut to_lockdown) = tokio::io::split(theirs);
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
-    // The mux stream blocks, so one plain thread pulls from the device.
+    // The mux stream blocks, so one plain thread owns it and pulls from the device; sending goes
+    // through its own writer, never through a lock the reader holds.
     let reader = {
-        let (stream, done) = (stream.clone(), done.clone());
+        let (mut stream, done) = (stream, done.clone());
         std::thread::spawn(move || {
             while !done.load(Relaxed) {
-                let got = stream.lock().unwrap().recv(Duration::from_millis(50));
-                match got {
+                match stream.recv(Duration::from_millis(50)) {
                     Ok(Some(d)) => {
                         if tx.send(d).is_err() {
                             return;
@@ -101,11 +101,10 @@ pub fn check(stream: MuxStream, udid: &str) -> Result<Option<String>, String> {
                 }
             }
         });
-        let up_stream = stream.clone();
         let up = tokio::spawn(async move {
             let mut buf = vec![0u8; 16 * 1024];
             while let Ok(n) = from_lockdown.read(&mut buf).await {
-                if n == 0 || up_stream.lock().unwrap().send(&buf[..n]).is_err() {
+                if n == 0 || writer.send(&buf[..n]).is_err() {
                     break;
                 }
             }
@@ -113,11 +112,15 @@ pub fn check(stream: MuxStream, udid: &str) -> Result<Option<String>, String> {
         let session = async {
             let mut client = LockdownClient::new(Idevice::new(Box::new(ours), "ZenLink"));
             // Readable before a session; the exact model for the device list (session.py).
-            let product = client
-                .get_value(Some("ProductType"), None)
-                .await
-                .ok()
-                .and_then(|v| v.as_string().map(String::from));
+            let product = tokio::time::timeout(
+                Duration::from_secs(4),
+                client.get_value(Some("ProductType"), None),
+            )
+            .await
+            .map_err(|_| "timed out waiting for lockdown (no answer to GetValue)".to_string())?
+            .ok()
+            .and_then(|v| v.as_string().map(String::from));
+            log::info!("usb direct: lockdown answered (ProductType {product:?})");
             client
                 .start_session(&pairing)
                 .await

@@ -329,10 +329,14 @@ impl Session {
         // qcast QMirror_Init/Trust: capture configuration, lockdown session over usbmux.
         {
             let h = Arc::new(dev.open()?);
-            if h.active_configuration() != Some(qt) {
-                h.set_configuration(qt).map_err(|e| {
-                    format!("Trust check over USB failed ({e}). Unplug the device and retry.")
-                })?;
+            // libusb0 refuses claim_interface (-22) on a handle that never selected a
+            // configuration, even when the device already runs it (a device left in capture mode).
+            if let Err(e) = h.set_configuration(qt) {
+                if h.active_configuration() != Some(qt) {
+                    return Err(format!(
+                        "Trust check over USB failed ({e}). Unplug the device and retry."
+                    ));
+                }
             }
             self.prove_trust(&h, &dev, qt)?;
         }
@@ -513,6 +517,9 @@ impl Session {
         let mut received = 0usize;
         let mut silent = Instant::now();
         let mut retried = false;
+        // Handshake bytes alone are not a picture: an untrusted device answers them and then
+        // stays silent (B-57), which used to sit at 0.0 fps forever.
+        let (opened, mut seen_frame) = (Instant::now(), false);
         let (mut rx, mut reading) = self.start_reader();
         let (mut stats_at, mut stats_bytes, mut frames) = (Instant::now(), 0usize, 0u32);
         let result = loop {
@@ -533,6 +540,14 @@ impl Session {
                     self.skew.rate()
                 );
                 (stats_at, stats_bytes, frames) = (Instant::now(), received, 0);
+            }
+            if !seen_frame && opened.elapsed() > Duration::from_secs(30) {
+                break Err(
+                    "The device answered but sent no picture. Unlock it and keep it unlocked. If it \
+                     still fails, this PC may not be trusted: use Apple mode once, tap Trust on the \
+                     device, then switch back to ZenLink Studio."
+                        .into(),
+                );
             }
             let chunk = match item {
                 Ok(c) => c,
@@ -592,7 +607,10 @@ impl Session {
                 let packet = buf[start + 4..start + len].to_vec();
                 start += len;
                 match self.handle(&packet) {
-                    Ok(true) => frames += 1,
+                    Ok(true) => {
+                        frames += 1;
+                        seen_frame = true;
+                    }
                     Ok(false) => {}
                     Err(e) => {
                         failed = Some(e);

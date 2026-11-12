@@ -919,6 +919,22 @@ fn on_state(ui: &AppWindow, st: &Value) {
     }
     let rot = st.get("rotation").and_then(Value::as_u64).unwrap_or(0) as u32;
     let live = phase == "streaming";
+    // iOS 27 sends H.265 only: without a HEVC decoder the window stays black (B-58).
+    let needs_hevc = live
+        && str_of(st, &["capture", "codec"]).is_some_and(|c| c.eq_ignore_ascii_case("hevc"))
+        && !APP.with_borrow(|a| a.streaming)
+        && !hevc_ok();
+    if needs_hevc {
+        log::warn!("apple: the stream is H.265 but Windows has no HEVC decoder");
+        open_sheet(
+            ui,
+            "hevc",
+            i18n::tr("H.265 (HEVC) decoder missing"),
+            i18n::tr("This iPhone/iPad sends its screen as H.265, and this Windows has no HEVC decoder, so the picture stays black. Install the free \"HEVC Video Extensions from Device Manufacturer\" from the Microsoft Store, then press Restart. Or use ZenLink Studio, which sends H.264."),
+            i18n::tr("Open Microsoft Store"),
+            i18n::tr("Later"),
+        );
+    }
     APP.with_borrow_mut(|a| {
         a.device_rotation = if [0, 90, 180, 270].contains(&rot) {
             rot
@@ -3566,6 +3582,11 @@ fn main() -> Result<(), slint::PlatformError> {
                 let _ = std::process::Command::new("explorer.exe")
                     .arg("ms-settings:optionalfeatures")
                     .spawn();
+            } else if kind == "hevc" {
+                // HEVC Video Extensions from Device Manufacturer (free).
+                let _ = std::process::Command::new("explorer.exe")
+                    .arg("ms-windows-store://pdp/?productid=9N4WGH0Z6VHQ")
+                    .spawn();
             } else if let Some(action) = kind.strip_prefix("drv:") {
                 run_driver(&ui, &api, action.to_string());
             } else if kind == "restart" {
@@ -4808,7 +4829,11 @@ fn main() -> Result<(), slint::PlatformError> {
                     // 30 fps. Each change costs ~2 window draws (Slint's frame throttle redraws at
                     // the monitor's rate while a redraw is pending), so every tick would double it.
                     let fresh = a.dots_at.map(|t| t.elapsed() >= Duration::from_millis(30)).unwrap_or(true);
-                    if fresh {
+                    // Frozen while another window has focus (B-60): OBS / TikTok LIVE Studio Game
+                    // Capture binds to whichever swap chain presents first, and a moving dot field
+                    // made that the whole OpenGL window instead of the picture. Also saves CPU.
+                    let focused = ui.window().with_winit_window(|w| w.has_focus()).unwrap_or(true);
+                    if fresh && (focused || a.dots.is_none()) {
                         a.dots_at = Some(Instant::now());
                         let t = START.with(|s| s.elapsed().as_secs_f32());
                         let mouse = ui.get_stage_hover().then(|| (ui.get_stage_mouse_x(), ui.get_stage_mouse_y()));

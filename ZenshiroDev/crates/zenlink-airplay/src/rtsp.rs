@@ -20,7 +20,13 @@ const LIMIT: usize = 1 << 20;
 pub async fn read<R: AsyncBufRead + Unpin>(r: &mut R) -> Option<Request> {
     let mut head = Vec::new();
     loop {
-        let n = r.read_until(b'\n', &mut head).await.ok()?;
+        // Bounded read: a peer that never sends a newline must not grow the buffer forever.
+        let left = (LIMIT + 1).saturating_sub(head.len()) as u64;
+        let n = (&mut *r)
+            .take(left)
+            .read_until(b'\n', &mut head)
+            .await
+            .ok()?;
         if n == 0 || head.len() > LIMIT {
             return None;
         }
