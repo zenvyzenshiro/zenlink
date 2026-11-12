@@ -3,1359 +3,1367 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
-#: apps/desktop/ui/app.slint:152
+#: apps/desktop/ui/app.slint:154
 msgid "Mirroring"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:152
+#: apps/desktop/ui/app.slint:154
 msgid "Waiting for the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:152
+#: apps/desktop/ui/app.slint:154
 msgid "Connecting…"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:152
+#: apps/desktop/ui/app.slint:154
 msgid "Action needed"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:152
+#: apps/desktop/ui/app.slint:154
 msgid "Ready"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:166
+#: apps/desktop/ui/app.slint:168
 msgid "No device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:176
+#: apps/desktop/ui/app.slint:178
 msgid "Restart"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:177
+#: apps/desktop/ui/app.slint:179
 msgid "Restart the connection"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:184
+#: apps/desktop/ui/app.slint:186
 msgid "Start"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:185
+#: apps/desktop/ui/app.slint:187
 msgid "Start mirroring"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:192
+#: apps/desktop/ui/app.slint:194
 msgid "Stop mirroring"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:198
+#: apps/desktop/ui/app.slint:200
 msgid "Sound off — click to turn on"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:198
+#: apps/desktop/ui/app.slint:200
 msgid "Sound on PC — click to mute"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:206
+#: apps/desktop/ui/app.slint:208
 msgid "Rotate view"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:211
+#: apps/desktop/ui/app.slint:213
 msgid "View mode: Auto-Fit / Edge-to-Edge / Stretch"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:219
+#: apps/desktop/ui/app.slint:221
 msgid "Exit full screen"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:219
+#: apps/desktop/ui/app.slint:221
 msgid "Full screen"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:226
+#: apps/desktop/ui/app.slint:228
 msgid "Device menu"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:233
+#: apps/desktop/ui/app.slint:235
 msgid "Settings"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:272
+#: apps/desktop/ui/app.slint:274
 msgid "Swipe from the right edge (forward)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:272
+#: apps/desktop/ui/app.slint:274
 msgid "Swipe left"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:273
+#: apps/desktop/ui/app.slint:275
 msgid "Back (right click works too)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:273
+#: apps/desktop/ui/app.slint:275
 msgid "Back"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:274
+#: apps/desktop/ui/app.slint:276
 msgid "Home screen"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:275
+#: apps/desktop/ui/app.slint:277
 msgid "Recent apps"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:276
+#: apps/desktop/ui/app.slint:278
 msgid "Swipe from the left edge (back, also Alt+←)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:276
+#: apps/desktop/ui/app.slint:278
 msgid "Swipe right"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:278
+#: apps/desktop/ui/app.slint:280
 msgid "Control Center"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:279
+#: apps/desktop/ui/app.slint:281
 msgid "Phone apps (open on the phone or in a new window)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:279
+#: apps/desktop/ui/app.slint:281
 msgid "Apps"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:280
+#: apps/desktop/ui/app.slint:282
 msgid "Quick Settings"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:281
+#: apps/desktop/ui/app.slint:283
 msgid "Notifications"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:281
+#: apps/desktop/ui/app.slint:283
 msgid "Alerts"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:282
+#: apps/desktop/ui/app.slint:284
 msgid "Phone volume down"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:283
+#: apps/desktop/ui/app.slint:285
 msgid "Phone volume up"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:284
+#: apps/desktop/ui/app.slint:286
 msgid "Power button (lock / wake the screen)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:284
+#: apps/desktop/ui/app.slint:286
 msgid "Lock screen"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:284
+#: apps/desktop/ui/app.slint:286
 msgid "Lock"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:415
+#: apps/desktop/ui/app.slint:417
 msgid "Connect the iPhone/iPad and the PC to the same Wi-Fi."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:416
+#: apps/desktop/ui/app.slint:418
 msgid "On the iPhone/iPad, open Control Center: swipe down from the top-right corner of the screen."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:417
+#: apps/desktop/ui/app.slint:419
 msgid "Tap Screen Mirroring (the two stacked rectangles)."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:418
+#: apps/desktop/ui/app.slint:420
 msgid "Pick ZenLinkStudio. The screen shows up here."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:419
+#: apps/desktop/ui/app.slint:421
 msgid "Press Start below."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:425
+#: apps/desktop/ui/app.slint:427
 msgid "First time only: plug in the USB cable, then press Set up Wi-Fi in Settings › Connection & driver."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:426
+#: apps/desktop/ui/app.slint:428
 msgid "Unlock the iPhone/iPad, then press Start."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:427
+#: apps/desktop/ui/app.slint:429
 msgid "Plug the iPhone/iPad into the PC with a USB cable."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:428
+#: apps/desktop/ui/app.slint:430
 msgid "Unlock its screen."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:429
+#: apps/desktop/ui/app.slint:431
 msgid "If it asks \"Trust this computer?\", tap Trust and enter the passcode."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:434
+#: apps/desktop/ui/app.slint:436
 msgid "Needs Trust"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:435
+#: apps/desktop/ui/app.slint:437
 msgid "Wi-Fi not set up"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:436
+#: apps/desktop/ui/app.slint:438
 msgid "Choose a mode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:437
+#: apps/desktop/ui/app.slint:439
 msgid "Needs a driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:438
+#: apps/desktop/ui/app.slint:440
 msgid "Restore the Apple driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:439
+#: apps/desktop/ui/app.slint:441
 msgid "Install the ZenLink Studio driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:440
+#: apps/desktop/ui/app.slint:442
 msgid "libusb-win32 is not installed"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:441
+#: apps/desktop/ui/app.slint:443
 msgid "Remove the libusb0 filter first"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:442
+#: apps/desktop/ui/app.slint:444
 msgid "Choose a connection mode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:443
+#: apps/desktop/ui/app.slint:445
 msgid "Wi-Fi is not set up yet"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:444
+#: apps/desktop/ui/app.slint:446
 msgid "Unlock it and tap Trust"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:445
+#: apps/desktop/ui/app.slint:447
 msgid "This device uses the ZenLink Studio driver, so Apple mode cannot see it. Restore the Apple driver, or switch to ZenLink Studio."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:446
+#: apps/desktop/ui/app.slint:448
 msgid "ZenLink Studio uses the libusb0 driver on the device. Install it, or switch to Apple Driver mode."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:447
+#: apps/desktop/ui/app.slint:449
 msgid "Install the iOS driver of TikTok LIVE Studio or libusb-win32 once, then press Check drivers. Or use Apple Driver mode."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:448
+#: apps/desktop/ui/app.slint:450
 msgid "A libusb0 filter is stacked on the Apple driver. It can crash Windows."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:449
+#: apps/desktop/ui/app.slint:451
 msgid "Pick Apple Driver or ZenLink Studio to continue."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:450
+#: apps/desktop/ui/app.slint:452
 msgid "Plug in the cable once, then press Set up Wi-Fi in Settings. Or choose Wired."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:451
+#: apps/desktop/ui/app.slint:453
 msgid "Unlock the device, tap Trust if it asks, then try again."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:453
+#: apps/desktop/ui/app.slint:455
 msgid "Detect device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:453
+#: apps/desktop/ui/app.slint:455
 msgid "Found on USB through the libusb0 driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:454
+#: apps/desktop/ui/app.slint:456
 msgid "Open the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:454
+#: apps/desktop/ui/app.slint:456
 msgid "Switching it to its screen-capture mode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:455
+#: apps/desktop/ui/app.slint:457
 msgid "Check trust"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:455
+#: apps/desktop/ui/app.slint:457
 msgid "Keep it unlocked while ZenLink proves this PC is trusted"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:456
+#: apps/desktop/ui/app.slint:458
 msgid "Start stream"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:456
+#: apps/desktop/ui/app.slint:458
 msgid "Receiving the screen over ZenLink Studio"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:458
+#: apps/desktop/ui/app.slint:460
 msgid "Device connected"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:458
+#: apps/desktop/ui/app.slint:460
 msgid "Your iPhone/iPad chose ZenLinkStudio in Screen Mirroring"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:459
+#: apps/desktop/ui/app.slint:461
 msgid "Secure connection"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:459
+#: apps/desktop/ui/app.slint:461
 msgid "AirPlay pairing and FairPlay key exchange"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:460
+#: apps/desktop/ui/app.slint:462
 msgid "Receive video"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:460
+#: apps/desktop/ui/app.slint:462
 msgid "Decrypting the AirPlay stream"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:461
+#: apps/desktop/ui/app.slint:463
 msgid "Receiving the screen over Wi-Fi"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:463
+#: apps/desktop/ui/app.slint:465
 msgid "Found through Apple Mobile Device Service"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:464
+#: apps/desktop/ui/app.slint:466
 msgid "Opening an encrypted Wi-Fi tunnel to the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:464
+#: apps/desktop/ui/app.slint:466
 msgid "Opening an encrypted USB tunnel to the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:465
+#: apps/desktop/ui/app.slint:467
 msgid "Prepare the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:465
+#: apps/desktop/ui/app.slint:467
 msgid "Keep it unlocked. The first time, a small developer image is installed."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:466
+#: apps/desktop/ui/app.slint:468
 msgid "Receiving the screen in HEVC"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:523
+#: apps/desktop/ui/app.slint:525
 msgid "Ready · Wi-Fi"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:528
+#: apps/desktop/ui/app.slint:530
 msgid "Waiting for the iPhone / iPad"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:529
+#: apps/desktop/ui/app.slint:531
 msgid "Plug in an iPhone or iPad"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:529
+#: apps/desktop/ui/app.slint:531
 msgid "{device} ready"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:538
+#: apps/desktop/ui/app.slint:540
 msgid "Unlock it, then press Start mirroring."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:561
+#: apps/desktop/ui/app.slint:563
 msgid "Windows Firewall blocks ZenLink, so the iPhone/iPad cannot connect. Press the button below, then choose Yes."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:568
+#: apps/desktop/ui/app.slint:570
 msgid "Allow ZenLink on the network"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:640
+#: apps/desktop/ui/app.slint:642
 msgid "Change"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:641
+#: apps/desktop/ui/app.slint:643
 msgid "Choose Apple Driver or ZenLink Studio"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:648
+#: apps/desktop/ui/app.slint:650
 msgid "Wired (USB)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:655
+#: apps/desktop/ui/app.slint:657
 msgid "Stop waiting"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:663
+#: apps/desktop/ui/app.slint:665
 msgid "Try again"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:667
+#: apps/desktop/ui/app.slint:669
 msgid "Restore Apple driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:668
+#: apps/desktop/ui/app.slint:670
 msgid "Install driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:669
+#: apps/desktop/ui/app.slint:671
 msgid "Remove filter"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:670
+#: apps/desktop/ui/app.slint:672
 msgid "Choose mode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:671
+#: apps/desktop/ui/app.slint:673
 msgid "Open settings"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:694
+#: apps/desktop/ui/app.slint:696
 msgid "Couldn't connect"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:695
+#: apps/desktop/ui/app.slint:697
 msgid "Connected"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:696
+#: apps/desktop/ui/app.slint:698
 msgid "Connecting to {device}"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:697
+#: apps/desktop/ui/app.slint:699
 msgid "Connecting"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:732
+#: apps/desktop/ui/app.slint:734
 msgid "Close"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:894
+#: apps/desktop/ui/app.slint:896
 msgid "Close ZenLink?"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:897
+#: apps/desktop/ui/app.slint:899
 msgid "ZenLink can keep running in the system tray so your devices stay connected."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:907
+#: apps/desktop/ui/app.slint:909
 msgid "Remember my choice"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:926
+#: apps/desktop/ui/app.slint:928
 msgid "You can change this in Settings."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:932
+#: apps/desktop/ui/app.slint:934
 msgid "Cancel"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:934
+#: apps/desktop/ui/app.slint:936
 msgid "Quit ZenLink"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:935
+#: apps/desktop/ui/app.slint:937
 msgid "Minimize to tray"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:985
+#: apps/desktop/ui/app.slint:987
 msgid "How should ZenLink connect?"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:986
+#: apps/desktop/ui/app.slint:988
 msgid "Nothing connects and no driver changes until you continue."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1004
+#: apps/desktop/ui/app.slint:1006
 msgid "Standard · full control"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1005
+#: apps/desktop/ui/app.slint:1007
 msgid "Recommended"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1006
+#: apps/desktop/ui/app.slint:1008
 msgid "Uses Apple's own driver. Most compatible, stable and easy."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1008
+#: apps/desktop/ui/app.slint:1010
 msgid "Up to 60 fps, HEVC (device-limited bitrate, about 4–6 Mbps)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1009
+#: apps/desktop/ui/app.slint:1011
 msgid "Mouse touch, keyboard, gestures and buttons"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1010
+#: apps/desktop/ui/app.slint:1012
 msgid "Apple's own driver, nothing to install"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1011
+#: apps/desktop/ui/app.slint:1013
 msgid "Wired or Wi-Fi (after a one-time setup with the cable)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1012
+#: apps/desktop/ui/app.slint:1014
 msgid "iOS 17–26: Hybrid Control (experimental)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1013
+#: apps/desktop/ui/app.slint:1015
 msgid "iOS 16 or older: use ZenLink Studio"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1022
+#: apps/desktop/ui/app.slint:1024
 msgid "For live streaming"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1023
+#: apps/desktop/ui/app.slint:1025
 msgid "Best quality for streaming: high bitrate (measured 12–30 Mbps), up to 60 fps, very low latency. Needs the libusb0 driver."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1025
+#: apps/desktop/ui/app.slint:1027
 msgid "Up to 60 fps, full native resolution over the cable, high-bitrate H.264"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1026
+#: apps/desktop/ui/app.slint:1028
 msgid "Wired (USB) or Wi-Fi (AirPlay, no driver)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1027
+#: apps/desktop/ui/app.slint:1029
 msgid "Picture and sound only: no touch, keyboard or gestures"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1028
+#: apps/desktop/ui/app.slint:1030
 msgid "Apple apps can't see the device until you switch back"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1035
+#: apps/desktop/ui/app.slint:1037
 msgid "Connection"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1039
+#: apps/desktop/ui/app.slint:1041
 msgid "Wired"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1050
+#: apps/desktop/ui/app.slint:1052
 msgid "You can change it any time in Settings › Connection & driver. Changing it may need an app restart and reconnecting the cable."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1057
+#: apps/desktop/ui/app.slint:1059
 msgid "Change device type"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1064
+#: apps/desktop/ui/app.slint:1066
 msgid "Continue"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1183
+#: apps/desktop/ui/app.slint:1185
 msgid "Detected"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1184
+#: apps/desktop/ui/app.slint:1186
 msgid " detected"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1185
+#: apps/desktop/ui/app.slint:1187
 msgid "Mirror and control compatible Apple devices using USB or Wi-Fi."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1186
+#: apps/desktop/ui/app.slint:1188
 msgid "Android Smartphone / Tablet"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1187
+#: apps/desktop/ui/app.slint:1189
 msgid "High-performance Android mirroring and control over USB or Wi-Fi."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1189
+#: apps/desktop/ui/app.slint:1191
 msgid "Apple Driver or ZenLink Studio"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1190
+#: apps/desktop/ui/app.slint:1192
 msgid "Wired or Wi-Fi"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1193
+#: apps/desktop/ui/app.slint:1195
 msgid "Through ADB and scrcpy, no app on the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1194
+#: apps/desktop/ui/app.slint:1196
 msgid "Wired or Wi-Fi, any Android brand"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1229
+#: apps/desktop/ui/app.slint:1231
 msgid "Welcome to ZenLink"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1232
+#: apps/desktop/ui/app.slint:1234
 msgid "Which device would you like to connect?"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1301
+#: apps/desktop/ui/app.slint:1303
 msgid "Apple and Android devices are both connected. Choose the one to mirror."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1308
+#: apps/desktop/ui/app.slint:1310
 msgid "Remember device type"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1312
+#: apps/desktop/ui/app.slint:1314
 msgid "You can change it any time in Settings › Device type or with the Back button."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1425
+#: apps/desktop/ui/app.slint:1427
 msgid "Android video"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1429
+#: apps/desktop/ui/app.slint:1431
 msgid "A profile fills in resolution, FPS, bitrate and codec; change one value and the profile becomes Custom. Each phone keeps its own settings (the same over USB and Wi-Fi). Encoders are read from the phone on the first mirroring; if the chosen encoder fails, ZenLink tries another hardware encoder, then H.264, at most 4 times, and keeps your choice."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1437
+#: apps/desktop/ui/app.slint:1439
 msgid "Resolution"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1437
+#: apps/desktop/ui/app.slint:1439
 msgid "Longest side."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1444
+#: apps/desktop/ui/app.slint:1446
 msgid "A cap; the phone never goes above its refresh rate."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1463
+#: apps/desktop/ui/app.slint:1465
 msgid "H.265 needs HEVC Video Extensions on Windows."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1464
+#: apps/desktop/ui/app.slint:1466
 msgid "This phone has no H.265 encoder."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1465
+#: apps/desktop/ui/app.slint:1467
 msgid "Auto = H.264, the lowest latency."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1475
+#: apps/desktop/ui/app.slint:1477
 msgid "Detected on the first mirroring."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1484
+#: apps/desktop/ui/app.slint:1486
 msgid "In use"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1513
+#: apps/desktop/ui/app.slint:1515
 msgid "Already on the cable? Press the Wi-Fi button next to the phone's name, done. Without a cable (Android 11+):"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1520
+#: apps/desktop/ui/app.slint:1522
 msgid "Option 1 · Scan a QR code (easiest)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1521
+#: apps/desktop/ui/app.slint:1523
 msgid "The phone and the PC are on the same Wi-Fi."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1522
+#: apps/desktop/ui/app.slint:1524
 msgid "On the phone: Settings › Developer options › Wireless debugging › turn it on."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1523
+#: apps/desktop/ui/app.slint:1525
 msgid "Press the button below, then on the phone tap \"Pair device with QR code\" and scan."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1529
+#: apps/desktop/ui/app.slint:1531
 msgid "Show QR code"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1531
+#: apps/desktop/ui/app.slint:1533
 msgid "Show a QR code to scan on the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1555
+#: apps/desktop/ui/app.slint:1557
 msgid "On the phone: Wireless debugging › \"Pair device with QR code\", then scan this code."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1581
+#: apps/desktop/ui/app.slint:1583
 msgid "Option 2 · Pairing code or IP address"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1583
+#: apps/desktop/ui/app.slint:1585
 msgid "Hide"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1583
+#: apps/desktop/ui/app.slint:1585
 msgid "Show"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1589
+#: apps/desktop/ui/app.slint:1591
 msgid "In Wireless debugging, tap \"Pair device with pairing code\"."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1590
+#: apps/desktop/ui/app.slint:1592
 msgid "Enter the IP:port and the 6-digit code shown in that window, press Pair."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1591
+#: apps/desktop/ui/app.slint:1593
 msgid "Enter the IP:port from the main Wireless debugging screen (a different port), press Connect. Paired before? Go straight to step 3."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1595
+#: apps/desktop/ui/app.slint:1597
 msgid "IP:port, e.g. 192.168.1.20:37099"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1601
+#: apps/desktop/ui/app.slint:1603
 msgid "6-digit code"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1613
+#: apps/desktop/ui/app.slint:1615
 msgid "Step 2: pair once with the code from the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1619
+#: apps/desktop/ui/app.slint:1621
 msgid "Connect"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1621
+#: apps/desktop/ui/app.slint:1623
 msgid "Step 3: connect to this address (adb connect)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1692
+#: apps/desktop/ui/app.slint:1694
 msgid "Android needs adb, Google's official tool (about 8 MB). ZenLink downloads and installs it for you, once."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1710
+#: apps/desktop/ui/app.slint:1712
 msgid "Downloading adb… "
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1719
+#: apps/desktop/ui/app.slint:1721
 msgid "Install adb"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1720
+#: apps/desktop/ui/app.slint:1722
 msgid "Download from dl.google.com, checked with SHA-256"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1755
+#: apps/desktop/ui/app.slint:1757
 msgid "Switch to Wi-Fi: once connected, you can unplug the cable"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1774
+#: apps/desktop/ui/app.slint:1776
 msgid "Start over the USB cable (most stable, lowest delay)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1781
+#: apps/desktop/ui/app.slint:1783
 msgid "Start over Wi-Fi (you can unplug the cable)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1788
+#: apps/desktop/ui/app.slint:1790
 msgid "Start mirroring the picked device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1793
+#: apps/desktop/ui/app.slint:1795
 msgid "Connecting… the phone starts the scrcpy server."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1810
+#: apps/desktop/ui/app.slint:1812
 msgid "Working…"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1820
+#: apps/desktop/ui/app.slint:1822
 msgid "Connect over Wi-Fi"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1822
+#: apps/desktop/ui/app.slint:1824
 msgid "Scan a QR code, a pairing code or an IP:port address"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1843
+#: apps/desktop/ui/app.slint:1845
 msgid "Turn on USB debugging"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1844
+#: apps/desktop/ui/app.slint:1846
 msgid "Settings › About phone › tap Build number 7×, then Developer options › USB debugging."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1848
+#: apps/desktop/ui/app.slint:1850
 msgid "Plug in the USB cable"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1849
+#: apps/desktop/ui/app.slint:1851
 msgid "Use a data cable, not a charge-only cable."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1853
+#: apps/desktop/ui/app.slint:1855
 msgid "Allow it on the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1854
+#: apps/desktop/ui/app.slint:1856
 msgid "Tap Allow on the Allow USB debugging prompt."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1859
+#: apps/desktop/ui/app.slint:1861
 msgid "Beta: picture, sound (Android 11+) and control from the PC. No driver is installed or changed."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1975
+#: apps/desktop/ui/app.slint:1977
 msgid "Connect a new device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1976
+#: apps/desktop/ui/app.slint:1978
 msgid "Once connected, the device shows up in the menu on the left."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:1997
+#: apps/desktop/ui/app.slint:1999
 msgid "Phones & tablets, any brand"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2007
+#: apps/desktop/ui/app.slint:2009
 msgid "Cable, then Wi-Fi"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2016
+#: apps/desktop/ui/app.slint:2018
 msgid "Android needs adb (about 8 MB, once)."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2027
+#: apps/desktop/ui/app.slint:2029
 msgid "USB cable"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2028
+#: apps/desktop/ui/app.slint:2030
 msgid "Most stable"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2038
+#: apps/desktop/ui/app.slint:2040
 msgid "No cable · Android 11+"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2049
+#: apps/desktop/ui/app.slint:2051
 msgid "Plug in a data cable"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2050
+#: apps/desktop/ui/app.slint:2052
 msgid "Then tap Allow on the phone. It shows up in the menu right away."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2073
+#: apps/desktop/ui/app.slint:2075
 msgid "Plug the cable into the PC"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2074
+#: apps/desktop/ui/app.slint:2076
 msgid "Unlock the iPhone/iPad first."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2078
+#: apps/desktop/ui/app.slint:2080
 msgid "Tap Trust, enter the passcode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2079
+#: apps/desktop/ui/app.slint:2081
 msgid "The device shows up in the menu on the left. Pick it to start."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2083
+#: apps/desktop/ui/app.slint:2085
 msgid "Wi-Fi (optional)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2084
+#: apps/desktop/ui/app.slint:2086
 msgid "After one cable setup, the device on the same Wi-Fi shows up without the cable."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2162
+#: apps/desktop/ui/app.slint:2164
 msgid "Settings & controls"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2174
+#: apps/desktop/ui/app.slint:2176
 msgid "Appearance"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2178
+#: apps/desktop/ui/app.slint:2180
 msgid "Liquid Glass shows the real desktop behind the window. Thickness 0% = fully clear with no blur, higher = more frosted (Windows' own blur). Turn it off for a solid window with no extra GPU work."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2181
+#: apps/desktop/ui/app.slint:2183
 msgid "Light"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2181
+#: apps/desktop/ui/app.slint:2183
 msgid "Dark"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2181
+#: apps/desktop/ui/app.slint:2183
 msgid "System"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2190
+#: apps/desktop/ui/app.slint:2192
 msgid "Glass thickness"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2191
+#: apps/desktop/ui/app.slint:2193
 msgid " · clear"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2199
+#: apps/desktop/ui/app.slint:2201
 msgid "Animated background"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2203
+#: apps/desktop/ui/app.slint:2205
 msgid "Language"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2213
+#: apps/desktop/ui/app.slint:2215
 msgid "Display & aspect"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2217
+#: apps/desktop/ui/app.slint:2219
 msgid "Auto-Fit shows the whole device screen. Edge-to-Edge fills the area and crops the sides. The window follows the device's size and orientation (portrait / landscape)."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2225
+#: apps/desktop/ui/app.slint:2227
 msgid "Window follows the screen"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2226
+#: apps/desktop/ui/app.slint:2228
 msgid "Portrait / landscape automatically"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2229
+#: apps/desktop/ui/app.slint:2231
 msgid "Rotation"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2240
+#: apps/desktop/ui/app.slint:2242
 msgid "Record / stream in OBS"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2244
+#: apps/desktop/ui/app.slint:2246
 msgid "Game Capture takes the picture straight from the GPU: sharp, no window frame, and it keeps working when ZenLink is behind other windows. Window Capture also works, but it picks up the window frame too."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2246
+#: apps/desktop/ui/app.slint:2248
 msgid "In OBS, add a Game Capture source → Mode: capture specific window → pick [ZenLink.exe]: ZenLink. Then select it and press Ctrl+F (Fit to screen): portrait / landscape stays centred automatically."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2254
+#: apps/desktop/ui/app.slint:2256
 msgid "Device audio → PC"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2258
+#: apps/desktop/ui/app.slint:2260
 msgid "Sound plays through WASAPI on this PC. Lip sync holds the picture a little so it matches the sound. Low buffer is tighter, high rides out hiccups."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2261
+#: apps/desktop/ui/app.slint:2263
 msgid "Device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2261
+#: apps/desktop/ui/app.slint:2263
 msgid "Both"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2267
+#: apps/desktop/ui/app.slint:2269
 msgid "Sound on Windows only; the device stays silent."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2269
+#: apps/desktop/ui/app.slint:2271
 msgid "Sound on the device only; Windows stays silent."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2271
+#: apps/desktop/ui/app.slint:2273
 msgid "ZenLink Studio over the cable can't play in both places: the sound plays on Windows."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2273
+#: apps/desktop/ui/app.slint:2275
 msgid "Sound on Windows and the phone (Android 13+; older phones: Windows only)."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2274
+#: apps/desktop/ui/app.slint:2276
 msgid "Sound on Windows and on the device."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2280
+#: apps/desktop/ui/app.slint:2282
 msgid "PC volume"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2290
+#: apps/desktop/ui/app.slint:2292
 msgid "Low"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2290
+#: apps/desktop/ui/app.slint:2292
 msgid "High"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2297
+#: apps/desktop/ui/app.slint:2299
 msgid "Control"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2302
+#: apps/desktop/ui/app.slint:2304
 msgid "Click = tap, drag = swipe, scroll = scroll on the phone. Right click = Back, middle click = Home. Click the picture first so the PC keyboard types on the phone."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2303
+#: apps/desktop/ui/app.slint:2305
 msgid "Click and drag = touch. Mouse Back button = swipe back. The PC keyboard works as a hardware keyboard in Apple Driver mode; click the picture first."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2304
+#: apps/desktop/ui/app.slint:2306
 msgid "Touch with the mouse"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2305
+#: apps/desktop/ui/app.slint:2307
 msgid "PC keyboard to the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2306
+#: apps/desktop/ui/app.slint:2308
 msgid "Gestures (scroll, mouse Back button)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2314
+#: apps/desktop/ui/app.slint:2316
 msgid "While the PC keyboard types on the device, single keys (Space, M) go to the device; Alt and Ctrl shortcuts stay with ZenLink."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2315
+#: apps/desktop/ui/app.slint:2317
 msgid "Sound on the PC on / off"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2316
+#: apps/desktop/ui/app.slint:2318
 msgid "Full screen / leave"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2317
+#: apps/desktop/ui/app.slint:2319
 msgid "Open / close Settings"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2318
+#: apps/desktop/ui/app.slint:2320
 msgid "Rotate the view (Auto, 90°, 180°, 270°, 0°)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2320
+#: apps/desktop/ui/app.slint:2322
 msgid "Copy the text on the device screen to the PC (OCR)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2321
+#: apps/desktop/ui/app.slint:2323
 msgid "Clear the copied-text history"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2322
+#: apps/desktop/ui/app.slint:2324
 msgid "Lock the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2323
+#: apps/desktop/ui/app.slint:2325
 msgid "Paste the PC clipboard on the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2324
+#: apps/desktop/ui/app.slint:2326
 msgid "Copy, cut, select all, undo on the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2325
+#: apps/desktop/ui/app.slint:2327
 msgid "Notification Center (open / close)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2326
+#: apps/desktop/ui/app.slint:2328
 msgid "Control Center (open / close)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2328
+#: apps/desktop/ui/app.slint:2330
 msgid "Phone volume up / down"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2329
+#: apps/desktop/ui/app.slint:2331
 msgid "Wake & unlock (saved passcode)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2330
+#: apps/desktop/ui/app.slint:2332
 msgid "Stealth dim: device screen to 0% / restore"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2331
+#: apps/desktop/ui/app.slint:2333
 msgid "Type the PC clipboard text on the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2332
+#: apps/desktop/ui/app.slint:2334
 msgid "Show / hide the on-screen keyboard"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2333
+#: apps/desktop/ui/app.slint:2335
 msgid "Copy, cut, paste, select all, undo in iOS"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2335
+#: apps/desktop/ui/app.slint:2337
 msgid "ZenLink Studio is picture and sound only: device control and its shortcuts are in Apple Driver mode."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2336
+#: apps/desktop/ui/app.slint:2338
 msgid "Apple device shortcuts work in Apple Driver mode while mirroring."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2344
+#: apps/desktop/ui/app.slint:2346
 msgid "Device type"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2348
+#: apps/desktop/ui/app.slint:2350
 msgid "Choose iPhone / iPad or Android. A running session is stopped safely first. Apple and Android settings are kept separately."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2367
+#: apps/desktop/ui/app.slint:2369
 msgid "Auto unlock"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2371
+#: apps/desktop/ui/app.slint:2373
 msgid "Apple Driver mode only (not ZenLink Studio). ZenLink wakes the iPhone/iPad, swipes up and types your passcode or password. It is stored encrypted (Windows DPAPI) for this Windows account only and never sent anywhere. Alt+U unlocks at any time."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2373
+#: apps/desktop/ui/app.slint:2375
 msgid "A passcode is saved on this PC."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2373
+#: apps/desktop/ui/app.slint:2375
 msgid "No passcode saved yet."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2381
+#: apps/desktop/ui/app.slint:2383
 msgid "Device passcode or password"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2387
+#: apps/desktop/ui/app.slint:2389
 msgid "Save"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2392
+#: apps/desktop/ui/app.slint:2394
 msgid "Remove"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2397
+#: apps/desktop/ui/app.slint:2399
 msgid "Unlock when mirroring starts"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2398
+#: apps/desktop/ui/app.slint:2400
 msgid "Also Alt+U at any time"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2402
+#: apps/desktop/ui/app.slint:2404
 msgid "Unlock again when the screen locks"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2403
+#: apps/desktop/ui/app.slint:2405
 msgid "Apple Driver mode, uses the saved passcode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2407
+#: apps/desktop/ui/app.slint:2409
 msgid "Limit automatic unlocks"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2408
+#: apps/desktop/ui/app.slint:2410
 msgid "At most 3 times in 30 seconds, so a wrong passcode cannot repeat"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2414
+#: apps/desktop/ui/app.slint:2416
 msgid "Connection & driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2418
+#: apps/desktop/ui/app.slint:2420
 msgid "Apple Driver uses Apple's own driver. ZenLink Studio uses libusb0 for high bitrate. Driver changes always ask for confirmation and administrator approval."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2433
+#: apps/desktop/ui/app.slint:2435
 msgid "Wi-Fi: pick ZenLinkStudio in Screen Mirroring on the device."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2433
+#: apps/desktop/ui/app.slint:2435
 msgid "Wired: through the libusb0 driver, high bitrate."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2434
+#: apps/desktop/ui/app.slint:2436
 msgid "Wi-Fi: press Set up Wi-Fi once with the cable in. A plugged-in device still works over the cable."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2434
+#: apps/desktop/ui/app.slint:2436
 msgid "Wired: through Apple's driver."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2441
+#: apps/desktop/ui/app.slint:2443
 msgid "Change mode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2442
+#: apps/desktop/ui/app.slint:2444
 msgid "Check drivers"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2443
+#: apps/desktop/ui/app.slint:2445
 msgid "Set up Wi-Fi"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2447
+#: apps/desktop/ui/app.slint:2449
 msgid "Remove libusb0 filter"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2449
+#: apps/desktop/ui/app.slint:2451
 msgid "Install ZenLink Studio driver"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2454
+#: apps/desktop/ui/app.slint:2456
 msgid "Updates"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2458
+#: apps/desktop/ui/app.slint:2460
 msgid "This copy was installed from the Microsoft Store, so the Microsoft Store downloads and installs updates. Your settings stay."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2458
+#: apps/desktop/ui/app.slint:2460
 msgid "ZenLink downloads only after you press Update, straight from the official GitHub release, and checks the file's SHA-256 before running it. Your settings stay. Beta and Stable are separate apps: switching channel installs the other edition next to this one."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2461
+#: apps/desktop/ui/app.slint:2463
 msgid "Microsoft Store edition: updates are installed by the Microsoft Store."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2464
+#: apps/desktop/ui/app.slint:2466
 msgid "Open in the Microsoft Store"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2465
+#: apps/desktop/ui/app.slint:2467
 msgid "Check at start"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2467
+#: apps/desktop/ui/app.slint:2469
 msgid "Channel"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2471
+#: apps/desktop/ui/app.slint:2473
 msgid "Stable"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2496
+#: apps/desktop/ui/app.slint:2498
 msgid "Install v"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2496
+#: apps/desktop/ui/app.slint:2498
 msgid "Update to v"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2501
+#: apps/desktop/ui/app.slint:2503
 msgid "Check for updates"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2502
+#: apps/desktop/ui/app.slint:2504
 msgid "Release notes"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2507
+#: apps/desktop/ui/app.slint:2509
 msgid "Startup & closing"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2511
+#: apps/desktop/ui/app.slint:2513
 msgid "Start with Windows"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2512
+#: apps/desktop/ui/app.slint:2514
 msgid "When closing the window"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2515
+#: apps/desktop/ui/app.slint:2517
 msgid "Ask every time"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2515
+#: apps/desktop/ui/app.slint:2517
 msgid "Quit"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2522
+#: apps/desktop/ui/app.slint:2524
 msgid "Advanced"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2526
+#: apps/desktop/ui/app.slint:2528
 msgid "Always on top"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2527
+#: apps/desktop/ui/app.slint:2530
+msgid "Ghost mode: press the key below while ZenLink is active. The window stays on top and clicks go to the app behind it (for example a trading chart). Press the key again, or click the tray icon, to use ZenLink again."
+msgstr ""
+
+#: apps/desktop/ui/app.slint:2542
+msgid "Ghost mode opacity"
+msgstr ""
+
+#: apps/desktop/ui/app.slint:2550
 msgid "Stats in the header"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2531
+#: apps/desktop/ui/app.slint:2554
 msgid "Stats (measured)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2535
+#: apps/desktop/ui/app.slint:2558
 msgid "All numbers are measured: decoded fps, presented fps, skipped frames (replaced by a newer frame before display), last frame decode time."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2539
+#: apps/desktop/ui/app.slint:2562
 msgid "Edge crop (fine)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2543
+#: apps/desktop/ui/app.slint:2566
 msgid "Trim black bars or borders off the picture, in device pixels. Touches still land in the right place."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2572
+#: apps/desktop/ui/app.slint:2595
 msgid "Reset (0 px)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2581
+#: apps/desktop/ui/app.slint:2604
 msgid "About & credits"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2595
+#: apps/desktop/ui/app.slint:2618
 msgid "Open log folder"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2596
+#: apps/desktop/ui/app.slint:2619
 msgid "ZenLink logs for bug reports (%LOCALAPPDATA%\\ZenLink-Next\\logs)"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2601
+#: apps/desktop/ui/app.slint:2624
 msgid "© 2026 Zenvy Zenshiro · GPL-3.0-or-later · no warranty."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2607
+#: apps/desktop/ui/app.slint:2630
 msgid "Android: the scrcpy server (Genymobile & Romain Vimont, Apache-2.0) and Google's official adb (Android platform-tools, unmodified; NOTICE.txt in third_party). Apple: pymobiledevice3 (GPL-3.0), pane-iphone-mirror-windows (GPL-3.0), quicktime_video_hack (MIT), libusb-win32, UxPlay/playfair (GPL-3.0). AAC sound: FFmpeg (LGPL). Details: README and docs/THIRD_PARTY.md."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2613
+#: apps/desktop/ui/app.slint:2636
 msgid "Android is a trademark of Google LLC. iPhone, iPad and AirPlay are trademarks of Apple Inc. ZenLink is not affiliated with Google or Apple."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2666
+#: apps/desktop/ui/app.slint:2689
 msgid "On the phone"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2666
+#: apps/desktop/ui/app.slint:2689
 msgid "New window"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:2673
+#: apps/desktop/ui/app.slint:2696
 msgid "Search apps…"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3389
+#: apps/desktop/ui/app.slint:3412
 msgid "Drop to send to the device"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3389
+#: apps/desktop/ui/app.slint:3412
 msgid "Sending files needs Apple Driver mode"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3389
+#: apps/desktop/ui/app.slint:3412
 msgid "No Android phone is being mirrored"
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3398
+#: apps/desktop/ui/app.slint:3421
 msgid "Then pick the app on the iPhone/iPad (e.g. VLC, Documents). The file also shows in Files › On My iPhone."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3399
+#: apps/desktop/ui/app.slint:3422
 msgid "ZenLink Studio replaces Apple's USB driver, so it cannot send files. Switch to Apple Driver in Settings."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3400
+#: apps/desktop/ui/app.slint:3423
 msgid "An .apk file is installed. Other files go to the phone's Download folder."
 msgstr ""
 
-#: apps/desktop/ui/app.slint:3400
+#: apps/desktop/ui/app.slint:3423
 msgid "Start mirroring an Android phone, then drop files here."
 msgstr ""
 
@@ -1611,618 +1619,626 @@ msgstr ""
 msgid "That folder name cannot be used."
 msgstr ""
 
-#: apps/desktop/src/main.rs:463
+#: apps/desktop/src/main.rs:464
 msgid "Passcode saved (encrypted on this PC)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:465
+#: apps/desktop/src/main.rs:466
 msgid "Passcode removed"
 msgstr ""
 
-#: apps/desktop/src/main.rs:470
+#: apps/desktop/src/main.rs:471
 msgid "Couldn't save the passcode"
 msgstr ""
 
-#: apps/desktop/src/main.rs:525
+#: apps/desktop/src/main.rs:526
 msgid "Wi-Fi setup failed: {reason}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:554
+#: apps/desktop/src/main.rs:555
 msgid "ready"
 msgstr ""
 
-#: apps/desktop/src/main.rs:555
+#: apps/desktop/src/main.rs:556
 msgid "unlock + Trust"
 msgstr ""
 
-#: apps/desktop/src/main.rs:557
+#: apps/desktop/src/main.rs:558
 msgid "choose a mode"
 msgstr ""
 
-#: apps/desktop/src/main.rs:558
+#: apps/desktop/src/main.rs:559
 msgid "ZenLink Studio driver"
 msgstr ""
 
-#: apps/desktop/src/main.rs:559
+#: apps/desktop/src/main.rs:560
 msgid "needs a driver"
 msgstr ""
 
-#: apps/desktop/src/main.rs:600
+#: apps/desktop/src/main.rs:601
 msgid "not seen on Wi-Fi"
 msgstr ""
 
-#: apps/desktop/src/main.rs:602
+#: apps/desktop/src/main.rs:603
 msgid "not connected"
 msgstr ""
 
-#: apps/desktop/src/main.rs:605
+#: apps/desktop/src/main.rs:606
 msgid "Saved · {where_}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:607
+#: apps/desktop/src/main.rs:608
 msgid "{model} · saved · {where_}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:719
+#: apps/desktop/src/main.rs:720
 msgid "Apple Driver (Standard)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:721
+#: apps/desktop/src/main.rs:722
 msgid "Not chosen yet"
 msgstr ""
 
-#: apps/desktop/src/main.rs:789
+#: apps/desktop/src/main.rs:790
 msgid "Restart to switch the mode"
 msgstr ""
 
-#: apps/desktop/src/main.rs:790
+#: apps/desktop/src/main.rs:791
 msgid "{name} is used after the ZenLink service restarts. Mirroring that is running stops."
 msgstr ""
 
-#: apps/desktop/src/main.rs:791
+#: apps/desktop/src/main.rs:792
 msgid "Restart now"
 msgstr ""
 
-#: apps/desktop/src/main.rs:792
+#: apps/desktop/src/main.rs:793
 msgid "Later"
 msgstr ""
 
-#: apps/desktop/src/main.rs:799
+#: apps/desktop/src/main.rs:800
 msgid "{name} after an app restart"
 msgstr ""
 
-#: apps/desktop/src/main.rs:819
+#: apps/desktop/src/main.rs:820
 msgid "running"
 msgstr ""
 
-#: apps/desktop/src/main.rs:821
+#: apps/desktop/src/main.rs:822
 msgid "not running"
 msgstr ""
 
-#: apps/desktop/src/main.rs:823
+#: apps/desktop/src/main.rs:824
 msgid "Native audio"
 msgstr ""
 
-#: apps/desktop/src/main.rs:825
+#: apps/desktop/src/main.rs:826
 msgid "available"
 msgstr ""
 
-#: apps/desktop/src/main.rs:827
+#: apps/desktop/src/main.rs:828
 msgid "not available"
 msgstr ""
 
-#: apps/desktop/src/main.rs:932
+#: apps/desktop/src/main.rs:933
 msgid "H.265 (HEVC) decoder missing"
 msgstr ""
 
-#: apps/desktop/src/main.rs:933
+#: apps/desktop/src/main.rs:934
 msgid "This iPhone/iPad sends its screen as H.265, and this Windows has no HEVC decoder, so the picture stays black. Install the free \"HEVC Video Extensions from Device Manufacturer\" from the Microsoft Store, then press Restart. Or use ZenLink Studio, which sends H.264."
 msgstr ""
 
-#: apps/desktop/src/main.rs:934
+#: apps/desktop/src/main.rs:935
 msgid "Open Microsoft Store"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1181
+#: apps/desktop/src/main.rs:1182
 msgid "mixed, needs repair"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1182
+#: apps/desktop/src/main.rs:1183
 msgid "unknown"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1187
+#: apps/desktop/src/main.rs:1188
 msgid "No iPhone/iPad on USB"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1207
+#: apps/desktop/src/main.rs:1208
 msgid "The Media Feature Pack is missing"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1208
+#: apps/desktop/src/main.rs:1209
 msgid "This Windows (an N or KN edition) has no Windows video components, so ZenLink cannot show the picture. Add the free \"Media Feature Pack\" from Microsoft: Settings › Apps › Optional features › View features › Media Feature Pack. Then restart the PC."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1209
+#: apps/desktop/src/main.rs:1210
 msgid "Open Optional features"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1229
+#: apps/desktop/src/main.rs:1230
 msgid "Stop casting before changing drivers."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1233
+#: apps/desktop/src/main.rs:1234
 msgid "Connect the device first."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1238
+#: apps/desktop/src/main.rs:1239
 msgid "Restore the Apple driver?"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1239
+#: apps/desktop/src/main.rs:1240
 msgid "Apple Driver mode can see the device again. ZenLink Studio stops until its driver is installed again. A backup is saved first. Windows will ask for administrator permission. Unplug and reconnect the cable afterwards."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1242
+#: apps/desktop/src/main.rs:1243
 msgid "Install the ZenLink Studio driver?"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1243
+#: apps/desktop/src/main.rs:1244
 msgid "Like TikTok LIVE Studio, ZenLink installs the libusb-win32 driver for this device. While it is installed, Apple mode and Apple apps can't see the device; press Restore Apple driver to switch back. If there is no driver package for this model yet, ZenLink builds one and signs it with a new certificate named \"ZenLink ZenLink Studio\", added to Windows' trusted certificates (its private key is deleted). A backup is saved first, and Apple's driver comes back automatically if the device doesn't start. Windows will ask for administrator permission. Unplug and reconnect the cable afterwards."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1246
+#: apps/desktop/src/main.rs:1247
 msgid "Remove the libusb0 filter?"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1247
+#: apps/desktop/src/main.rs:1248
 msgid "It is stacked on Apple's driver, which can crash Windows. Apple's driver stays. A backup is saved first. Windows will ask for administrator permission."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1268
+#: apps/desktop/src/main.rs:1269
 msgid "Changing the device's driver…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1269
+#: apps/desktop/src/main.rs:1270
 msgid "Approve the Windows permission prompt. A PowerShell window shows each step; keep the cable plugged in until it finishes."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1328
+#: apps/desktop/src/main.rs:1329
 msgid "Driver changed"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1331
+#: apps/desktop/src/main.rs:1332
 msgid "The ZenLink service needs a restart to use {target} mode. Unplug the cable and plug it in again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1337
+#: apps/desktop/src/main.rs:1338
 msgid "The backend did not answer."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1342
+#: apps/desktop/src/main.rs:1343
 msgid "The previous state was restored."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1349
+#: apps/desktop/src/main.rs:1350
 msgid "Driver not changed"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1589
+#: apps/desktop/src/main.rs:1590
 msgid "adb is not installed yet."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1590
+#: apps/desktop/src/main.rs:1591
 msgid "Starting ADB…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1592
+#: apps/desktop/src/main.rs:1593
 msgid "ADB did not start. Close other apps that use ADB, then try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1595
+#: apps/desktop/src/main.rs:1596
 msgid "ADB port 5037 is used by another program. ZenLink does not change it."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1599
+#: apps/desktop/src/main.rs:1600
 msgid "Windows sees a phone on USB, but ADB does not yet. Turn on USB debugging (steps below), then unplug and plug the cable in again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1601
+#: apps/desktop/src/main.rs:1602
 msgid "No Android device yet. Follow the steps below."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1603
+#: apps/desktop/src/main.rs:1604
 msgid "device(s) seen through ADB."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1608
+#: apps/desktop/src/main.rs:1609
 msgid "Another app's ADB server (version {version}) is running; ZenLink does not stop it."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1622
+#: apps/desktop/src/main.rs:1623
 msgid "Emulator"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1627
+#: apps/desktop/src/main.rs:1628
 msgid "Tap Allow on the phone"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1628
+#: apps/desktop/src/main.rs:1629
 msgid "Offline, reconnect the cable"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1629
+#: apps/desktop/src/main.rs:1630
 msgid "No USB permission or driver"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1630
+#: apps/desktop/src/main.rs:1631
 msgid "Recovery or bootloader mode"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1632
+#: apps/desktop/src/main.rs:1633
 msgid "Android too old (API {sdk}, needs 21+)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1634
+#: apps/desktop/src/main.rs:1635
 msgid "Reading device info…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1867
+#: apps/desktop/src/main.rs:1868
 msgid ", no PC decoder"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1881
+#: apps/desktop/src/main.rs:1882
 msgid "Start mirroring first."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1890
+#: apps/desktop/src/main.rs:1891
 msgid "No picture to read yet."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1893
+#: apps/desktop/src/main.rs:1894
 msgid "Reading the text on the screen…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:1928
+#: apps/desktop/src/main.rs:1929
 msgid "Text recognition failed (Windows OCR)."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1930
+#: apps/desktop/src/main.rs:1931
 msgid "No text found on the screen."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1932
+#: apps/desktop/src/main.rs:1933
 msgid "Text read, but Windows didn't allow copying it to the clipboard."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1934
+#: apps/desktop/src/main.rs:1935
 msgid "Nothing new on this screen; the copied text is unchanged."
 msgstr ""
 
-#: apps/desktop/src/main.rs:1937
+#: apps/desktop/src/main.rs:1938
 msgid "Copied to the PC: {n} new line(s) ({total} in total). Alt+R starts over."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2078
+#: apps/desktop/src/main.rs:2079
 msgid "system"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2086
+#: apps/desktop/src/main.rs:2087
 msgid "The phone listed no apps."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2088
+#: apps/desktop/src/main.rs:2089
 msgid "No app matches."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2090
+#: apps/desktop/src/main.rs:2091
 msgid "{_0} of {total} apps. Type to search."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2096
+#: apps/desktop/src/main.rs:2097
 msgid "{total} apps."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2111
+#: apps/desktop/src/main.rs:2112
 msgid "Start mirroring an Android phone first."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2115
+#: apps/desktop/src/main.rs:2116
 msgid "Apps on {_0}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2135
+#: apps/desktop/src/main.rs:2136
 msgid "Reading the phone's apps…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2156
+#: apps/desktop/src/main.rs:2157
 msgid "Could not read the apps: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2182
+#: apps/desktop/src/main.rs:2183
 msgid "Opening {_0}…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2184
+#: apps/desktop/src/main.rs:2185
 msgid "Phone control is not ready."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2200
+#: apps/desktop/src/main.rs:2201
 msgid "The app window did not open: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2269
+#: apps/desktop/src/main.rs:2270
 msgid "1/3 · Reading the phone's Wi-Fi address…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2276
+#: apps/desktop/src/main.rs:2277
 msgid "The phone is not on Wi-Fi"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2277
+#: apps/desktop/src/main.rs:2278
 msgid "Couldn't read the Wi-Fi address"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2279
+#: apps/desktop/src/main.rs:2280
 msgid "2/3 · Turning on ADB over Wi-Fi on the phone (its screen may flicker)…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2283
+#: apps/desktop/src/main.rs:2284
 msgid "Couldn't turn on TCP/IP mode"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2286
+#: apps/desktop/src/main.rs:2287
 msgid "3/3 · Connecting over Wi-Fi…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2294
+#: apps/desktop/src/main.rs:2295
 msgid "Connected over Wi-Fi. You can unplug the cable"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2304
+#: apps/desktop/src/main.rs:2305
 msgid "Couldn't connect over Wi-Fi. The PC and the phone must be on the same network"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2317
+#: apps/desktop/src/main.rs:2318
 msgid "Invalid address. Example: 192.168.1.20:37099"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2321
+#: apps/desktop/src/main.rs:2322
 msgid "Connecting to the phone over Wi-Fi…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2323
+#: apps/desktop/src/main.rs:2324
 msgid "Connected over Wi-Fi"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2337
+#: apps/desktop/src/main.rs:2338
 msgid "Enter the pairing address (IP:port) shown on the phone."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2342
+#: apps/desktop/src/main.rs:2343
 msgid "The pairing code has 6 digits."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2346
+#: apps/desktop/src/main.rs:2347
 msgid "Pairing with the phone…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2348
+#: apps/desktop/src/main.rs:2349
 msgid "Paired. Now enter the address on the Wireless debugging screen and press Connect"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2349
+#: apps/desktop/src/main.rs:2350
 msgid "Pairing failed"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2397
+#: apps/desktop/src/main.rs:2398
 msgid "Waiting for the phone to scan…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2445
+#: apps/desktop/src/main.rs:2446
 msgid "The QR code was not scanned within 2 minutes. Try again, or use a pairing code"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2448
+#: apps/desktop/src/main.rs:2449
 msgid "Phone found, pairing…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2454
+#: apps/desktop/src/main.rs:2455
 msgid "Paired, connecting…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2468
+#: apps/desktop/src/main.rs:2469
 msgid "Connect failed"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2477
+#: apps/desktop/src/main.rs:2478
 msgid "Paired. Enter the address on the Wireless debugging screen and press Connect"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2529
+#: apps/desktop/src/main.rs:2530
 msgid "Test recording"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2557
+#: apps/desktop/src/main.rs:2558
 msgid "The picked device is not ready yet. Follow the steps below, then press Start."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2561
+#: apps/desktop/src/main.rs:2562
 msgid "Pick a device first. Plug in the phone with USB debugging on, or connect it over Wi-Fi."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2571
+#: apps/desktop/src/main.rs:2572
 msgid "The scrcpy server file is missing ({e}). Reinstall ZenLink."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2664
+#: apps/desktop/src/main.rs:2665
 msgid "Needs attention"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2808
+#: apps/desktop/src/main.rs:2809
 msgid "Pick a ready Android phone first."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2848
+#: apps/desktop/src/main.rs:2849
 msgid "The window did not open: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2948
+#: apps/desktop/src/main.rs:2949
 msgid "Mirroring failed: {_0}. Reconnect the cable or tap Allow on the phone, then Start again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2949
+#: apps/desktop/src/main.rs:2950
 msgid "Retrying… ({_0})"
 msgstr ""
 
-#: apps/desktop/src/main.rs:2991
+#: apps/desktop/src/main.rs:2988
+msgid "Ghost mode off"
+msgstr ""
+
+#: apps/desktop/src/main.rs:3002
+msgid "Ghost mode: clicks go to the app behind. Press {key} again (or click the tray icon) to leave."
+msgstr ""
+
+#: apps/desktop/src/main.rs:3019
 msgid "This shortcut needs Apple Driver mode while mirroring."
 msgstr ""
 
-#: apps/desktop/src/main.rs:2998
+#: apps/desktop/src/main.rs:3026
 msgid "Sound on the PC: off (Alt+M)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3000
+#: apps/desktop/src/main.rs:3028
 msgid "Sound on the PC: on (Alt+M)"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3017
+#: apps/desktop/src/main.rs:3045
 msgid "Rotation: {label}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3033
+#: apps/desktop/src/main.rs:3061
 msgid "Copy history cleared. The next Alt+C starts fresh."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3042
+#: apps/desktop/src/main.rs:3070
 msgid "Typing {n} characters on the device."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3044
+#: apps/desktop/src/main.rs:3072
 msgid "The PC clipboard has no text."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3082
+#: apps/desktop/src/main.rs:3110
 msgid "The chosen encoder failed; now using {using}. Your choice is kept."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3093
+#: apps/desktop/src/main.rs:3121
 msgid "Open ZenLink"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3196
+#: apps/desktop/src/main.rs:3224
 msgid "Checking for updates…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3206
+#: apps/desktop/src/main.rs:3234
 msgid "ZenLink is up to date."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3217
+#: apps/desktop/src/main.rs:3245
 msgid "Other edition: v{v}. Installs as a separate app; settings do not move over."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3219
+#: apps/desktop/src/main.rs:3247
 msgid "New version available: v{v}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3226
+#: apps/desktop/src/main.rs:3254
 msgid "ZenLink v{v} is available. Open Settings › Updates."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3234
+#: apps/desktop/src/main.rs:3262
 msgid "Could not check: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3270
+#: apps/desktop/src/main.rs:3298
 msgid "Failed: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3276
+#: apps/desktop/src/main.rs:3304
 msgid "Downloading {_0}…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3307
+#: apps/desktop/src/main.rs:3335
 msgid "The other edition's installer is open."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3315
+#: apps/desktop/src/main.rs:3343
 msgid "Update failed: {e}"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3473
+#: apps/desktop/src/main.rs:3505
 msgid "Pick an iPhone or iPad first. Plug it in with the cable and unlock it; it shows up in the list."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3508
+#: apps/desktop/src/main.rs:3540
 msgid "{name} is not connected. Plug in the cable (or join the same Wi-Fi), unlock it, then press Start."
 msgstr ""
 
-#: apps/desktop/src/main.rs:3530
+#: apps/desktop/src/main.rs:3562
 msgid "Waiting for administrator permission…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3593
+#: apps/desktop/src/main.rs:3625
 msgid "Restarting the ZenLink service…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3611
+#: apps/desktop/src/main.rs:3643
 msgid "Restarting the connection…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3691
+#: apps/desktop/src/main.rs:3723
 msgid "Applying the Android settings…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:3882
+#: apps/desktop/src/main.rs:3914
 msgid "Could not install adb. Check the internet connection and try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4182
+#: apps/desktop/src/main.rs:4214
 msgid "The mode was not saved, try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4203
+#: apps/desktop/src/main.rs:4235
 msgid "Switching to Wi-Fi…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4205
+#: apps/desktop/src/main.rs:4237
 msgid "Switching to the cable…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4219
+#: apps/desktop/src/main.rs:4251
 msgid "The connection could not be changed, try again."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4309
+#: apps/desktop/src/main.rs:4341
 msgid "Setting up Wi-Fi…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4311
+#: apps/desktop/src/main.rs:4343
 msgid "Checking drivers…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4337
+#: apps/desktop/src/main.rs:4369
 msgid "Wi-Fi is ready. You can unplug the cable."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4339
+#: apps/desktop/src/main.rs:4371
 msgid "Wi-Fi could not be set up."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4346
+#: apps/desktop/src/main.rs:4378
 msgid "Drivers checked."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4554
+#: apps/desktop/src/main.rs:4590
 msgid "Unlocking the device…"
 msgstr ""
 
-#: apps/desktop/src/main.rs:4856
+#: apps/desktop/src/main.rs:4896
 msgid "No picture from the iPhone/iPad yet. Unlock the device and press Restart. If it stays empty, send the logs (Settings › About › Open log folder)."
 msgstr ""
 
-#: apps/desktop/src/main.rs:4870
+#: apps/desktop/src/main.rs:4910
 msgid "sound"
 msgstr ""

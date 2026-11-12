@@ -2,6 +2,21 @@
 
 Full notes for each version are on the [Releases](https://github.com/zenvyzenshiro/zenlink/releases) page.
 
+## 2.5.14
+
+### Added
+- **Ghost mode:** press **F4** (or F6 / F8 / F9, Settings › Advanced) while ZenLink is active. The window stays on top, fades to the opacity you pick (20–100 %), and mouse clicks go to the app behind it, for example a trading chart. Press the key again, or click the tray icon, to use ZenLink again. The key is only taken from other apps while Ghost mode is on. Idea by irulestar.
+
+### Fixed
+- **ZenLink Studio over the cable:** the Trust check over USB timed out, so the iPhone never sent its screen (no Trust prompt, "Check trust" failed, then `-22` on every retry). Fixed in the USB connection itself; a session that gets no picture for 30 s now says to unlock the device or Trust this PC.
+- **Black window on iOS 27 (Apple Driver):** iOS 27 sends H.265 only. When Windows has no HEVC decoder, ZenLink now explains it and opens "HEVC Video Extensions" in the Microsoft Store.
+- **OBS / TikTok LIVE Studio Game Capture showed the whole window:** the animated background kept the window redrawing, and Game Capture hooked it instead of the picture. The background now pauses while ZenLink is in the background.
+- **Stability:** Stop now ends iOS 17–26 (Hybrid) sessions; a damaged `airplay.json` no longer crashes ZenLink; Android and Apple connections no longer hang without a timeout; the picture comes back after a slow Wi-Fi start; Wi-Fi setup no longer asks the device again every minute.
+- **Smart App Control (Windows 11):** the website explains why unsigned installers are blocked.
+
+### Removed
+- Unused source: the unfinished Android companion app (`apps/mobile`), old release notes and internal audit documents, and an unused window effect (`glass.rs`).
+
 ## 2.5.13
 
 ### Changed

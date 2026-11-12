@@ -16,6 +16,7 @@ mod drivers;
 mod filedrop;
 mod filewin;
 mod flow;
+mod ghost;
 mod input;
 mod ocr;
 mod perf;
@@ -2976,6 +2977,33 @@ fn android_tick(ui: &AppWindow) {
     });
 }
 
+/// Ghost mode on / off (R58, see ghost.rs).
+fn set_ghost(ui: &AppWindow, on: bool) {
+    let Some(h) = hwnd_of(ui.window()) else {
+        return;
+    };
+    let p = ui.get_prefs();
+    if !on {
+        ghost::leave(h, p.on_top);
+        show_toast(ui, i18n::tr("Ghost mode off").to_string());
+        return;
+    }
+    let weak = ui.as_weak();
+    ghost::enter(h, &p.ghost_key, p.ghost_opacity, move || {
+        let weak = weak.clone();
+        let _ = slint::invoke_from_event_loop(move || {
+            if let Some(ui) = weak.upgrade() {
+                set_ghost(&ui, false);
+            }
+        });
+    });
+    show_toast(
+        ui,
+        i18n::tr("Ghost mode: clicks go to the app behind. Press {key} again (or click the tray icon) to leave.")
+            .replace("{key}", &p.ghost_key),
+    );
+}
+
 /// Performs a window shortcut (B-26).
 fn run_shortcut(
     ui: &AppWindow,
@@ -3367,6 +3395,10 @@ fn main() -> Result<(), slint::PlatformError> {
             let _ = slint::invoke_from_event_loop(move || {
                 let Some(ui) = w.upgrade() else { return };
                 match e {
+                    // In Ghost mode the window cannot be clicked: the tray brings it back.
+                    tray::Event::Toggle | tray::Event::Show if ghost::is_on() => {
+                        set_ghost(&ui, false)
+                    }
                     tray::Event::Toggle if !tray::HIDDEN.load(Relaxed) => hide_to_tray(&ui),
                     tray::Event::Toggle | tray::Event::Show => show_window(&ui),
                     tray::Event::Quit => quit_app(&ui),
@@ -4445,6 +4477,10 @@ fn main() -> Result<(), slint::PlatformError> {
             let Some(ui) = weak.upgrade() else {
                 return false;
             };
+            if !ctrl && !alt && ghost::is_key(&text, &ui.get_prefs().ghost_key) {
+                set_ghost(&ui, true);
+                return true;
+            }
             let android_screen = ui.get_screen().as_str() == "android";
             let keyboard = ui.get_prefs().keyboard;
             let apple_live = !android_screen && APP.with_borrow(|a| a.streaming);

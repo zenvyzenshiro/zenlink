@@ -143,6 +143,8 @@ pub fn defaults() -> Prefs {
         unlock_on_lock: false,
         unlock_limit: true,
         on_top: false,
+        ghost_key: "F4".into(),
+        ghost_opacity: 100.0,
         stats: false,
         dots: true,
         platform: "".into(),
@@ -245,6 +247,8 @@ pub fn from_value(v: &Value) -> Prefs {
     b("unlockOnLock", &mut p.unlock_on_lock);
     b("unlockLimit", &mut p.unlock_limit);
     b("onTop", &mut p.on_top);
+    s("ghostKey", &mut p.ghost_key, &crate::ghost::KEYS);
+    f("ghostOpacity", &mut p.ghost_opacity, 20.0, 100.0);
     b("stats", &mut p.stats);
     b("dots", &mut p.dots);
     // Device platform (phase A2). Separate from the backend's Apple
@@ -318,7 +322,7 @@ pub fn to_value(p: &Prefs) -> Value {
         "audioOut": p.audio_out.as_str(), "volume": p.volume, "lipSync": p.lip_sync,
         "audioBuffer": p.audio_buffer.as_str(), "touch": p.touch, "keyboard": p.keyboard,
         "gestures": p.gestures, "startWithWindows": p.start_with_windows, "closeAction": p.close_action.as_str(), "closeToTray": p.close_action == "tray", "autoUnlock": p.auto_unlock, "unlockOnLock": p.unlock_on_lock, "unlockLimit": p.unlock_limit,
-        "onTop": p.on_top, "stats": p.stats, "dots": p.dots,
+        "onTop": p.on_top, "ghostKey": p.ghost_key.as_str(), "ghostOpacity": p.ghost_opacity,"stats": p.stats, "dots": p.dots,
         "platform": p.platform.as_str(), "rememberPlatform": p.remember_platform,
         "androidMaxSize": p.android_max_size.as_str(), "androidFps": p.android_fps.as_str(),
         "androidBitrate": p.android_bitrate.as_str(), "androidCodec": p.android_codec.as_str(),

@@ -50,6 +50,8 @@ export struct Prefs {
     unlock-on-lock: bool, // unlock again when the device locks while mirroring
     unlock-limit: bool, // at most 3 automatic unlocks in 30 s
     on-top: bool,
+    ghost-key: string,      // F4 | F6 | F8 | F9: Ghost mode on/off (on top, clicks go through)
+    ghost-opacity: float,   // 20..100 % while in Ghost mode
     stats: bool,
     dots: bool,             // animated dot background
     platform: string,       // "" | apple | android (first screen)
@@ -2524,6 +2526,27 @@ component SettingsPanel inherits Glass {
                     tint-a: #a1a1aa;
                     tint-b: #52525b;
                     Row { label: I18n.t("Always on top"); Toggle { checked: prefs.on-top; toggled(v) => { root.prefs.on-top = v; root.changed(root.prefs); } } }
+                    Text {
+                        text: I18n.t("Ghost mode: press the key below while ZenLink is active. The window stays on top and clicks go to the app behind it (for example a trading chart). Press the key again, or click the tray icon, to use ZenLink again.");
+                        font-size: 11.5px;
+                        color: Theme.text-2;
+                        wrap: word-wrap;
+                    }
+                    Seg {
+                        options: ["F4", "F6", "F8", "F9"];
+                        labels: ["F4", "F6", "F8", "F9"];
+                        value: prefs.ghost-key;
+                        changed(v) => { root.prefs.ghost-key = v; root.changed(root.prefs); }
+                    }
+                    Row {
+                        label: I18n.t("Ghost mode opacity");
+                        Text { text: round(max(20, prefs.ghost-opacity)) + "%"; font-size: 12px; color: Theme.text-2; vertical-alignment: center; }
+                    }
+                    GlassSlider {
+                        step: 5;
+                        value: prefs.ghost-opacity;
+                        changed(v) => { root.prefs.ghost-opacity = max(20, v); root.changed(root.prefs); }
+                    }
                     Row { label: I18n.t("Stats in the header"); Toggle { checked: prefs.stats; toggled(v) => { root.prefs.stats = v; root.changed(root.prefs); } } }
                 }
 
