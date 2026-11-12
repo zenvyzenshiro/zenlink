@@ -20,6 +20,7 @@ mod ghost;
 mod input;
 mod ocr;
 mod perf;
+mod pinch;
 mod prefs;
 mod shortcuts;
 mod tray;
@@ -4471,6 +4472,20 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // PC keyboard to Android (Settings › PC keyboard).
     {
+        // Android Ctrl+C / Ctrl+X: the phone's clipboard comes back here.
+        let weak = ui.as_weak();
+        zenlink_android::mirror::on_device_clipboard(move |text| {
+            let msg = if text.is_empty() {
+                i18n::tr("Nothing was copied on the phone.")
+            } else if set_pc_clipboard_text(&text) {
+                i18n::tr("Copied from the phone. Paste it on the PC with Ctrl+V.")
+            } else {
+                i18n::tr("Text copied on the phone, but Windows didn't allow it on the clipboard.")
+            };
+            let _ = weak.upgrade_in_event_loop(move |ui| show_toast(&ui, msg));
+        });
+    }
+    {
         let weak = ui.as_weak();
         let input_keys = input.clone();
         ui.on_key_input(move |text, ctrl, shift, alt| {
@@ -4628,6 +4643,10 @@ fn main() -> Result<(), slint::PlatformError> {
                                 PointerEvent::Wheel(u, v, d) if g.load(Relaxed) => {
                                     let end = (v + 0.12 * d).clamp(0.02, 0.98);
                                     input.send(Cmd::Stroke(u, v, u, end, 5, 10));
+                                }
+                                PointerEvent::Pinch(u, v, d) if t.load(Relaxed) => {
+                                    let input = input.clone();
+                                    pinch::zoom(u, v, d, std::sync::Arc::new(move |p, f| input.send(Cmd::Fingers(p, f))));
                                 }
                                 _ => {}
                                 }

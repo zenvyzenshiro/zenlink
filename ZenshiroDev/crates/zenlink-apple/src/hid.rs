@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use idevice::{
     core_device::{
-        ButtonState, IndigoHidClient, KeyboardUsage, MainKeyboardService,
+        ButtonState, IndigoHidClient, KeyboardUsage, MainKeyboardService, TouchscreenContact,
         UniversalHidServiceClient, TOUCHSCREEN_STATE_CONTACT, TOUCHSCREEN_STATE_RELEASE,
     },
     rsd::RsdHandshake,
@@ -22,6 +22,11 @@ pub enum Cmd {
         contact: bool,
         x: u16,
         y: u16,
+    },
+    /// Two fingers at once (pinch), x, y as for `Touch`; `touching: false` lifts both.
+    Fingers {
+        touching: bool,
+        points: [(u16, u16); 2],
     },
     Button(&'static str),
     /// HID keyboard usages held down; empty releases them all.
@@ -151,6 +156,23 @@ impl Hid {
     pub async fn run(&mut self, cmd: Cmd) -> Result<String, String> {
         let r = match cmd {
             Cmd::Touch { contact, x, y } => self.touch(contact, x, y).await.map(|_| String::new()),
+            Cmd::Fingers { touching, points } => {
+                let contacts = [0u8, 1].map(|i| TouchscreenContact {
+                    identity: i,
+                    touching,
+                    x: points[i as usize].0,
+                    y: points[i as usize].1,
+                });
+                let r = self.uni().await;
+                match r {
+                    Ok(u) => u
+                        .send_multitouch(&contacts, None)
+                        .await
+                        .map(|_| String::new())
+                        .map_err(|e| format!("pinch: {e:?}")),
+                    Err(e) => Err(e),
+                }
+            }
             Cmd::Button(name) => self.button(name).await.map(|_| String::new()),
             Cmd::Keys(usages) => self.keys(&usages).await.map(|_| String::new()),
             Cmd::Action { name, text } => self.action(&name, &text).await,

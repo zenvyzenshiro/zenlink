@@ -21,6 +21,14 @@ use std::time::{Duration, Instant};
 use crate::adb::{AdbClient, AdbError, Target};
 use crate::scrcpy::{DEVICE_SERVER_PATH, SCRCPY_VERSION};
 
+type ClipboardHandler = Box<dyn Fn(String) + Send + Sync>;
+static CLIPBOARD_HANDLER: std::sync::OnceLock<ClipboardHandler> = std::sync::OnceLock::new();
+
+/// Sets, once, what to do with clipboard text the device sends (after `GET_CLIPBOARD`).
+pub fn on_device_clipboard(f: impl Fn(String) + Send + Sync + 'static) {
+    let _ = CLIPBOARD_HANDLER.set(Box::new(f));
+}
+
 /// Video codec ids (`u32` big-endian, the codec's FourCC-like name).
 pub const CODEC_H264: u32 = 0x6832_3634;
 pub const CODEC_H265: u32 = 0x6832_3635;
@@ -295,7 +303,7 @@ pub fn server_command(scid: u32, tunnel_forward: bool, o: &VideoOptions) -> Stri
             "audio=false"
         },
         // No automatic clipboard sync: the PC sends its clipboard only on
-        // Ctrl+V (the device's copies are drained, not used yet).
+        // Ctrl+V, the device sends its own only on Ctrl+C / Ctrl+X (GET_CLIPBOARD).
         if o.control {
             "control=true clipboard_autosync=false"
         } else {
@@ -466,15 +474,31 @@ impl Mirror {
         })
     }
 
-    /// Reads and drops what the device writes on the control socket
-    /// (clipboard, acks, UHID output), so its buffer never fills and blocks the
-    /// server. Ends when the socket closes.
-    fn drain_device_messages(mut s: TcpStream) {
+    /// Reads what the device writes on the control socket, so its buffer never fills and
+    /// blocks the server: its clipboard goes to the [`on_device_clipboard`] handler, acks and
+    /// UHID output are dropped. Ends when the socket closes.
+    fn drain_device_messages(s: TcpStream) {
         let _ = std::thread::Builder::new()
             .name("android-control-rx".into())
             .spawn(move || {
-                let mut buf = [0u8; 4096];
-                while matches!(s.read(&mut buf), Ok(n) if n > 0) {}
+                let mut r = io::BufReader::new(s);
+                loop {
+                    match crate::control::read_device_message(&mut r) {
+                        Ok(Some(text)) => {
+                            if let Some(f) = CLIPBOARD_HANDLER.get() {
+                                f(text);
+                            }
+                        }
+                        Ok(None) => {}
+                        Err(e) if e.kind() == io::ErrorKind::Other => {
+                            log::warn!("android: {e}; ignoring further device messages");
+                            let mut buf = [0u8; 4096];
+                            while matches!(r.read(&mut buf), Ok(n) if n > 0) {}
+                            return;
+                        }
+                        Err(_) => return,
+                    }
+                }
             });
     }
 

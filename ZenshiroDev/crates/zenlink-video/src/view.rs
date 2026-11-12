@@ -45,6 +45,9 @@ pub enum PointerEvent {
     Middle,
     /// Wheel notches (positive = away from the user).
     Wheel(f32, f32, f32),
+    /// Ctrl + wheel, or a touchpad pinch (Windows sends it as Ctrl + wheel):
+    /// notches, positive = zoom in.
+    Pinch(f32, f32, f32),
 }
 
 type PointerCb = Box<dyn Fn(PointerEvent) + Send + 'static>;
@@ -304,7 +307,12 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
             };
             let _ = windows::Win32::Graphics::Gdi::ScreenToClient(hwnd, &mut pt);
             let (u, v) = inner.to_uv(hwnd, pt.x as f32, pt.y as f32);
-            send(PointerEvent::Wheel(u, v, d));
+            const MK_CONTROL: usize = 0x0008;
+            send(if wp.0 & MK_CONTROL != 0 {
+                PointerEvent::Pinch(u, v, d)
+            } else {
+                PointerEvent::Wheel(u, v, d)
+            });
             LRESULT(0)
         }
         WM_ERASEBKGND => LRESULT(1),

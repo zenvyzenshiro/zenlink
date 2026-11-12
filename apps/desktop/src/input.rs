@@ -57,6 +57,8 @@ pub enum Cmd {
     Keys(Vec<u8>),
     /// Apple `paste-pc`: type this text on the device.
     TypeText(String),
+    /// Two pinch fingers ([`crate::pinch`]).
+    Fingers(crate::pinch::Phase, crate::pinch::Fingers),
 }
 
 #[derive(Clone)]
@@ -141,6 +143,10 @@ fn worker(rx: Receiver<Cmd>, rot: Arc<AtomicU32>) {
             Cmd::Action(a) => api.action(a, ""),
             Cmd::Keys(usages) => api.tap(usages),
             Cmd::TypeText(text) => api.action("paste-pc", &text),
+            Cmd::Fingers(phase, f) => api.send(hid::Cmd::Fingers {
+                touching: phase != crate::pinch::Phase::Up,
+                points: f.map(|(u, v)| pt(u, v)),
+            }),
         }
     }
 }

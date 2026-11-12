@@ -6,6 +6,8 @@ Full notes for each version are on the [Releases](https://github.com/zenvyzenshi
 
 ### Added
 - **Ghost mode:** press **F4** (or F6 / F8 / F9, Settings › Advanced) while ZenLink is active. The window stays on top, fades to the opacity you pick (20–100 %), and mouse clicks go to the app behind it, for example a trading chart. Press the key again, or click the tray icon, to use ZenLink again. The key is only taken from other apps while Ghost mode is on. Idea by irulestar.
+- **Pinch zoom:** Ctrl + mouse wheel, or a pinch on the touchpad, pinches with two fingers on the device (Android, and iPhone / iPad in Apple Driver mode) to zoom photos, maps and charts. Idea by irulestar.
+- **Copy and paste between the phone and the PC:** on Android, Ctrl+C / Ctrl+X copies or cuts on the phone and puts the text on the PC clipboard; Ctrl+V pastes the PC clipboard on the phone; Ctrl+A selects all. On iPhone / iPad (Apple Driver mode), Ctrl+V now types the PC clipboard text (Ctrl+Shift+V pastes the device's own clipboard). iOS does not share its clipboard over the cable, so copying from an iPhone to the PC is not possible.
 
 ### Fixed
 - **ZenLink Studio over the cable:** the Trust check over USB timed out, so the iPhone never sent its screen (no Trust prompt, "Check trust" failed, then `-22` on every retry). Fixed in the USB connection itself; a session that gets no picture for 30 s now says to unlock the device or Trust this PC.

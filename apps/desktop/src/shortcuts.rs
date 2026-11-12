@@ -77,13 +77,17 @@ pub fn route(
         if c == ',' {
             return Some(Shortcut::Settings);
         }
-        // Apple: Ctrl+letter = Cmd+letter on the device; Ctrl+K keyboard.
+        // Apple: Ctrl+letter = Cmd+letter on the device; Ctrl+K keyboard. Ctrl+V types the
+        // PC clipboard (like on the PC); Ctrl+Shift+V pastes the device's own clipboard.
         // (Android maps Ctrl+letter itself in `android::key_input`.)
+        if !android && shift && lower == 'v' {
+            return Some(Shortcut::Apple("paste"));
+        }
         if !android && !shift {
             return match lower {
                 'k' => Some(Shortcut::Apple("toggle-keyboard")),
                 'c' => Some(Shortcut::Apple("copy")),
-                'v' => Some(Shortcut::Apple("paste")),
+                'v' => Some(Shortcut::Apple("paste-pc")),
                 'x' => Some(Shortcut::Apple("cut")),
                 'a' => Some(Shortcut::Apple("select-all")),
                 'z' => Some(Shortcut::Apple("undo")),
@@ -232,6 +236,14 @@ mod tests {
         assert_eq!(
             route(false, "c", true, false, false, true),
             Some(Shortcut::Apple("copy"))
+        );
+        assert_eq!(
+            route(false, "v", true, false, false, true),
+            Some(Shortcut::Apple("paste-pc"))
+        );
+        assert_eq!(
+            route(false, "V", true, true, false, true),
+            Some(Shortcut::Apple("paste"))
         );
     }
 

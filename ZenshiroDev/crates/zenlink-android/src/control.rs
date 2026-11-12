@@ -15,7 +15,51 @@ pub const TYPE_BACK_OR_SCREEN_ON: u8 = 4;
 pub const TYPE_EXPAND_NOTIFICATION_PANEL: u8 = 5;
 pub const TYPE_EXPAND_SETTINGS_PANEL: u8 = 6;
 pub const TYPE_COLLAPSE_PANELS: u8 = 7;
+pub const TYPE_GET_CLIPBOARD: u8 = 8;
 pub const TYPE_SET_CLIPBOARD: u8 = 9;
+/// `GET_CLIPBOARD` copy keys (`ControlMessage.COPY_KEY_*`).
+pub const COPY_KEY_COPY: u8 = 1;
+pub const COPY_KEY_CUT: u8 = 2;
+
+/// Device messages (`DeviceMessage.TYPE_*`).
+const DEVICE_CLIPBOARD: u8 = 0;
+const DEVICE_ACK_CLIPBOARD: u8 = 1;
+const DEVICE_UHID_OUTPUT: u8 = 2;
+
+/// Reads one message the device sends on the control socket: `Ok(Some(text))` for its
+/// clipboard, `Ok(None)` for others (acks, UHID output). An unknown type is an error (the
+/// stream cannot be followed after it).
+pub fn read_device_message(r: &mut impl std::io::Read) -> std::io::Result<Option<String>> {
+    let mut t = [0u8; 1];
+    r.read_exact(&mut t)?;
+    match t[0] {
+        DEVICE_CLIPBOARD => {
+            let mut n = [0u8; 4];
+            r.read_exact(&mut n)?;
+            let n = u32::from_be_bytes(n) as usize;
+            if n > CLIPBOARD_MAX_BYTES + 14 {
+                return Err(std::io::Error::other("clipboard message too long"));
+            }
+            let mut b = vec![0u8; n];
+            r.read_exact(&mut b)?;
+            Ok(Some(String::from_utf8_lossy(&b).into_owned()))
+        }
+        DEVICE_ACK_CLIPBOARD => {
+            r.read_exact(&mut [0u8; 8])?;
+            Ok(None)
+        }
+        DEVICE_UHID_OUTPUT => {
+            let mut h = [0u8; 4];
+            r.read_exact(&mut h)?;
+            let n = u16::from_be_bytes([h[2], h[3]]) as usize;
+            r.read_exact(&mut vec![0u8; n])?;
+            Ok(None)
+        }
+        other => Err(std::io::Error::other(format!(
+            "device message type {other}"
+        ))),
+    }
+}
 pub const TYPE_SET_DISPLAY_POWER: u8 = 10;
 pub const TYPE_ROTATE_DEVICE: u8 = 11;
 pub const TYPE_START_APP: u8 = 16;
@@ -116,6 +160,11 @@ pub enum Control {
     ExpandNotifications,
     ExpandSettings,
     CollapsePanels,
+    /// Asks for the device clipboard (it answers with [`read_device_message`]); `copy_key`
+    /// [`COPY_KEY_COPY`] / [`COPY_KEY_CUT`] presses COPY / CUT on the device first.
+    GetClipboard {
+        copy_key: u8,
+    },
     /// Sets the device clipboard; `paste` also pastes it (like Ctrl+V).
     SetClipboard {
         sequence: i64,
@@ -227,6 +276,10 @@ impl Control {
             Control::ExpandNotifications => w.push(TYPE_EXPAND_NOTIFICATION_PANEL),
             Control::ExpandSettings => w.push(TYPE_EXPAND_SETTINGS_PANEL),
             Control::CollapsePanels => w.push(TYPE_COLLAPSE_PANELS),
+            Control::GetClipboard { copy_key } => {
+                w.push(TYPE_GET_CLIPBOARD);
+                w.push(*copy_key);
+            }
             Control::SetClipboard {
                 sequence,
                 paste,
@@ -405,6 +458,27 @@ mod tests {
         }
         .encode();
         assert_eq!(b, [9, 0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 0, 0, 2, b'o', b'k']);
+        assert_eq!(
+            Control::GetClipboard {
+                copy_key: COPY_KEY_COPY
+            }
+            .encode(),
+            [8, 1]
+        );
+    }
+
+    #[test]
+    fn device_messages() {
+        let mut s: &[u8] = &[
+            1, 0, 0, 0, 0, 0, 0, 0, 7, // ack
+            2, 0, 1, 0, 2, 0xaa, 0xbb, // UHID output, 2 bytes
+            0, 0, 0, 0, 2, b'h', b'i', // clipboard "hi"
+            9,    // unknown
+        ];
+        assert_eq!(read_device_message(&mut s).unwrap(), None);
+        assert_eq!(read_device_message(&mut s).unwrap(), None);
+        assert_eq!(read_device_message(&mut s).unwrap().as_deref(), Some("hi"));
+        assert!(read_device_message(&mut s).is_err());
     }
 
     #[test]

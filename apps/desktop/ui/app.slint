@@ -2323,16 +2323,19 @@ component SettingsPanel inherits Glass {
                     KeyRow { keys: "Alt + R"; text: I18n.t("Clear the copied-text history"); }
                     if !root.studio: KeyRow { keys: "Alt + L"; text: root.screen == "android" ? I18n.t("Power button (lock / wake the screen)") : I18n.t("Lock the device"); }
                     if root.screen == "android": KeyRow { keys: "Ctrl + V"; text: I18n.t("Paste the PC clipboard on the phone"); }
-                    if root.screen == "android": KeyRow { keys: "Ctrl + C / X / A / Z"; text: I18n.t("Copy, cut, select all, undo on the phone"); }
+                    if root.screen == "android": KeyRow { keys: "Ctrl + C / X"; text: I18n.t("Copy / cut on the phone, also to the PC clipboard"); }
+                    if root.screen == "android": KeyRow { keys: "Ctrl + A / Z"; text: I18n.t("Select all, undo on the phone"); }
+                    if !root.studio: KeyRow { keys: "Ctrl + wheel"; text: I18n.t("Pinch zoom on the device (touchpad pinch too)"); }
                     if !root.studio: KeyRow { keys: "Alt + N"; text: root.screen == "android" ? "Notifications" : I18n.t("Notification Center (open / close)"); }
                     if !root.studio: KeyRow { keys: "Alt + Q"; text: root.screen == "android" ? "Quick Settings" : I18n.t("Control Center (open / close)"); }
                     if root.screen == "android": KeyRow { keys: "Alt + S"; text: "Recent Apps"; }
                     if root.screen == "android": KeyRow { keys: "Alt + ↑ / ↓"; text: I18n.t("Phone volume up / down"); }
                     if root.screen != "android" && !root.studio: KeyRow { keys: "Alt + U"; text: I18n.t("Wake & unlock (saved passcode)"); }
                     if root.screen != "android" && !root.studio: KeyRow { keys: "Alt + D"; text: I18n.t("Stealth dim: device screen to 0% / restore"); }
-                    if root.screen != "android" && !root.studio: KeyRow { keys: "Alt + V"; text: I18n.t("Type the PC clipboard text on the device"); }
+                    if root.screen != "android" && !root.studio: KeyRow { keys: "Ctrl + V"; text: I18n.t("Type the PC clipboard text on the device"); }
+                    if root.screen != "android" && !root.studio: KeyRow { keys: "Ctrl + Shift + V"; text: I18n.t("Paste the device's own clipboard"); }
                     if root.screen != "android" && !root.studio: KeyRow { keys: "Ctrl + K"; text: I18n.t("Show / hide the on-screen keyboard"); }
-                    if root.screen != "android" && !root.studio: KeyRow { keys: "Ctrl + C / X / V / A / Z"; text: I18n.t("Copy, cut, paste, select all, undo in iOS"); }
+                    if root.screen != "android" && !root.studio: KeyRow { keys: "Ctrl + C / X / A / Z"; text: I18n.t("Copy, cut, select all, undo in iOS"); }
                     if root.screen != "android": Text {
                         text: root.studio ? I18n.t("ZenLink Studio is picture and sound only: device control and its shortcuts are in Apple Driver mode.")
                             : I18n.t("Apple device shortcuts work in Apple Driver mode while mirroring.");

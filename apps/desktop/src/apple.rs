@@ -989,6 +989,17 @@ impl Engine {
                         );
                         hid::Cmd::Touch { contact, x, y }
                     }
+                    Input::Hid(hid::Cmd::Fingers { touching, points }) if hybrid => {
+                        let rot = sess.state.lock().unwrap().rotation;
+                        let points = points.map(|(x, y)| {
+                            zenlink_core::api::device_point(
+                                x as f32 / 65535.0,
+                                y as f32 / 65535.0,
+                                rot,
+                            )
+                        });
+                        hid::Cmd::Fingers { touching, points }
+                    }
                     Input::Hid(c) => c,
                     Input::Volume => {
                         let down = AUDIO_TO_PC.load(Relaxed);

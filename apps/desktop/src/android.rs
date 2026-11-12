@@ -26,6 +26,9 @@ use zenlink_android::adb::{AdbClient, Target};
 use zenlink_android::control::{
     self, keycode, meta, Control, ACTION_DOWN, ACTION_MOVE, ACTION_UP, POINTER_ID_GENERIC_FINGER,
 };
+/// Pointer ids of the two pinch fingers (not the mouse's -1 or the single finger's -2).
+const PINCH_POINTERS: [i64; 2] = [10, 11];
+
 use zenlink_android::encoders::{self, Attempt, Decoders, Encoder, Preference};
 use zenlink_android::mirror::{
     codec_name, read_device_meta, Mirror, Packet, Session, Stopper, VideoOptions, VideoReader,
@@ -187,7 +190,12 @@ impl Shared {
 
     /// Mouse on the picture. `u, v` are as the user sees the picture;
     /// `rotation` is the rotation the window shows it with.
-    pub fn pointer(&self, e: PointerEvent, rotation: u32) {
+    pub fn pointer(self: &Arc<Self>, e: PointerEvent, rotation: u32) {
+        if let PointerEvent::Pinch(u, v, d) = e {
+            let sh = Arc::clone(self);
+            crate::pinch::zoom(u, v, d, Arc::new(move |p, f| sh.fingers(p, f, rotation)));
+            return;
+        }
         let Some((w, h)) = self.frame() else { return };
         let at = |u: f32, v: f32| {
             let (x, y) = device_point(u, v, rotation);
@@ -213,6 +221,7 @@ impl Shared {
                 self.back()
             }
             PointerEvent::Middle => self.send(&Control::key_tap(keycode::HOME, 0)),
+            PointerEvent::Pinch(..) => {}
             PointerEvent::Wheel(u, v, notches) => self.send(&[Control::Scroll {
                 pos: at(u, v),
                 h: 0.0,
@@ -220,6 +229,37 @@ impl Shared {
                 buttons: 0,
             }]),
         }
+    }
+
+    /// Two fingers of a pinch ([`crate::pinch`]). scrcpy turns the second DOWN / first UP
+    /// into POINTER_DOWN / POINTER_UP itself.
+    fn fingers(&self, phase: crate::pinch::Phase, f: crate::pinch::Fingers, rotation: u32) {
+        use crate::pinch::Phase;
+        let Some((w, h)) = self.frame() else { return };
+        let touch = |i: usize| {
+            let (x, y) = device_point(f[i].0, f[i].1, rotation);
+            let (action, pressure) = match phase {
+                Phase::Down => (ACTION_DOWN, 1.0),
+                Phase::Move => (ACTION_MOVE, 1.0),
+                Phase::Up => (ACTION_UP, 0.0),
+            };
+            Control::Touch {
+                action,
+                pointer: PINCH_POINTERS[i],
+                pos: control::position(x as f32 / 65535.0, y as f32 / 65535.0, w, h),
+                pressure,
+                action_button: 0,
+                buttons: 0,
+            }
+        };
+        if phase == Phase::Down {
+            self.forget_panel();
+        }
+        self.send(&if phase == Phase::Up {
+            [touch(1), touch(0)]
+        } else {
+            [touch(0), touch(1)]
+        });
     }
 
     /// The phone closes a panel by itself on a touch, BACK or HOME.
@@ -820,6 +860,15 @@ pub fn key_input(text: &str, ctrl: bool, shift: bool, alt: bool) -> KeyInput {
         let l = c.to_ascii_lowercase();
         if l == 'v' {
             return KeyInput::Paste;
+        }
+        // Ctrl+C / Ctrl+X: copy / cut on the phone, and its clipboard comes to the PC.
+        if (l == 'c' || l == 'x') && !shift && !alt {
+            let copy_key = if l == 'c' {
+                control::COPY_KEY_COPY
+            } else {
+                control::COPY_KEY_CUT
+            };
+            return KeyInput::Send(vec![Control::GetClipboard { copy_key }]);
         }
         if l.is_ascii_lowercase() {
             let k = keycode::A + (l as i32 - 'a' as i32);
@@ -1456,7 +1505,13 @@ mod tests {
         );
         assert_eq!(
             key_input("c", true, false, false),
-            KeyInput::Send(Control::key_tap(keycode::A + 2, meta::CTRL_ON).to_vec())
+            KeyInput::Send(vec![Control::GetClipboard {
+                copy_key: control::COPY_KEY_COPY
+            }])
+        );
+        assert_eq!(
+            key_input("a", true, false, false),
+            KeyInput::Send(Control::key_tap(keycode::A, meta::CTRL_ON).to_vec())
         );
         assert_eq!(key_input("v", true, false, false), KeyInput::Paste);
         assert_eq!(
@@ -1477,7 +1532,7 @@ mod tests {
         let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let tx = TcpStream::connect(l.local_addr().unwrap()).unwrap();
         let (mut rx, _) = l.accept().unwrap();
-        let shared = Shared::default();
+        let shared = Arc::new(Shared::default());
         *shared.control.lock().unwrap() = Some(tx);
         shared.pointer(PointerEvent::Down(0.5, 0.5), 0);
         // No frame size yet: nothing is sent.
@@ -1518,7 +1573,7 @@ mod tests {
         let mut r = &w[..];
         read_device_meta(&mut r).unwrap();
         let mut v = VideoReader::new(r).unwrap();
-        let shared = Shared::default();
+        let shared = Arc::new(Shared::default());
         first_config(&mut v, &shared).unwrap();
         assert_eq!(shared.frame(), Some((720, 1600)));
     }
@@ -1528,7 +1583,7 @@ mod tests {
         let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let tx = TcpStream::connect(l.local_addr().unwrap()).unwrap();
         let (mut rx, _) = l.accept().unwrap();
-        let shared = Shared::default();
+        let shared = Arc::new(Shared::default());
         *shared.control.lock().unwrap() = Some(tx);
         shared.action("notifications");
         shared.action("notifications");
