@@ -12,6 +12,7 @@ use std::sync::{Mutex, OnceLock, RwLock};
 const BUILT_IN: &[(&str, &str)] = &[(
     "id",
     include_str!("../../../ZenshiroDev/resources/lang/id.po"),
+    include_str!("../../../ZenshiroDev/resources/lang/zh_CN.po"),
 )];
 
 /// The chosen language's texts (empty for English).
