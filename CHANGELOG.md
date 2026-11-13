@@ -2,6 +2,15 @@
 
 Full notes for each version are on the [Releases](https://github.com/zenvyzenshiro/zenlink/releases) page.
 
+## 2.5.15
+
+### Added
+- **Simplified Chinese (简体中文)** in Settings › Language. Translation by hub8848.
+- **Developer Mode step** in the Apple Driver guide: iOS 16 and later need Developer Mode for the screen. When it is off, ZenLink now says so and makes its switch appear in Settings › Privacy & Security (iOS hides it until a developer tool asks).
+
+### Fixed
+- **iPhone not found in Apple Driver mode, with no message** (issue #9): when Apple Mobile Device Service is missing or stopped, Windows sees the iPhone but Apple mode cannot. ZenLink now says so and opens Apple Devices in the Microsoft Store, the settings show the service's real state, and the reason is written to the log.
+
 ## 2.5.14
 
 ### Added

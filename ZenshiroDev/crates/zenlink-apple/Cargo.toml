@@ -15,6 +15,7 @@ libloading = "0.8"
 # Pinned: idevice breaks its API at every point release until 0.2.
 idevice = { version = "=0.1.68", default-features = false, features = [
     "ring",
+    "amfi",
     "usbmuxd",
     "core_device_proxy",
     "tunnel_tcp_stack",

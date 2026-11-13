@@ -559,6 +559,7 @@ fn apple_rows(ui: &AppWindow, st: &Value, current: &str) -> Vec<AppleDev> {
             "wifi" => i18n::tr("Wi-Fi not set up"),
             "mode" => i18n::tr("choose a mode"),
             "restore" => i18n::tr("ZenLink Studio driver"),
+            "service" => i18n::tr("needs Apple Devices"),
             _ => i18n::tr("needs a driver"),
         };
         let os = str_of(d, &["os"])
@@ -3652,6 +3653,12 @@ fn main() -> Result<(), slint::PlatformError> {
                 "mode" => {
                     ui.set_chooser_cancelable(true);
                     open_chooser(&ui);
+                }
+                // Apple Devices (Microsoft Store) brings Apple Mobile Device Service (issue #9).
+                "service" => {
+                    let _ = std::process::Command::new("explorer.exe")
+                        .arg("ms-windows-store://pdp/?productid=9NP83LWLPZ9K")
+                        .spawn();
                 }
                 _ => {
                     ui.set_settings_open(true);

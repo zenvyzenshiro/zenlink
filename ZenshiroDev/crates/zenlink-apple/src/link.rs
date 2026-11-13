@@ -2,6 +2,7 @@
 //! (RemotePairing), both into idevice's in-process TCP stack, plus the Developer Disk Image.
 
 use idevice::{
+    amfi::AmfiClient,
     core_device_proxy::CoreDeviceProxy,
     cryptexd::{install_ddi, installed_ddi, Cryptex1Assets},
     lockdown::LockdownClient,
@@ -44,10 +45,34 @@ fn err(what: &str) -> impl Fn(idevice::IdeviceError) -> String + '_ {
     move |e| format!("{what}: {e:?}")
 }
 
+/// Prefix of the error when usbmuxd (Apple Mobile Device Service) cannot be reached.
+pub const SERVICE_ERR: &str = "Apple Mobile Device Service:";
+
 pub async fn usbmux() -> Result<UsbmuxdConnection, String> {
     UsbmuxdConnection::default()
         .await
-        .map_err(|e| format!("Apple Mobile Device Service: {e:?}"))
+        .map_err(|e| format!("{SERVICE_ERR} {e:?}"))
+}
+
+/// `ensure_ddi`'s error when Developer Mode is off (the Developer Disk Image needs it).
+pub const DEV_MODE_OFF: &str = "Developer Mode is off";
+
+/// Developer Mode on? When it is off, its switch is revealed in Settings › Privacy & Security
+/// (iOS hides it until a developer tool asks). An unknown state (AMFI unavailable) counts as on,
+/// so the mount itself reports what is wrong.
+async fn developer_mode(provider: &UsbmuxdProvider) -> bool {
+    let Ok(mut amfi) = AmfiClient::connect(provider).await else {
+        return true;
+    };
+    match amfi.get_developer_mode_status().await {
+        Ok(false) => {
+            if let Err(e) = amfi.reveal_developer_mode_option_in_ui().await {
+                log::warn!("amfi: reveal Developer Mode: {e:?}");
+            }
+            false
+        }
+        _ => true,
+    }
 }
 
 /// Devices on USB with whether this PC has their pair record (Trust done).
@@ -206,6 +231,9 @@ impl Link {
         let Some(provider) = self.provider.as_ref() else {
             return Err("Developer Disk Image missing: connect the cable once".into());
         };
+        if !developer_mode(provider).await {
+            return Err(DEV_MODE_OFF.into());
+        }
         let dirs = ddi::search_dirs(kind);
         let dir = ddi::find(kind, &dirs).ok_or("Developer Disk Image files not found")?;
         progress("Preparing the device (first time)");

@@ -113,6 +113,11 @@ static ENGINE: OnceLock<Arc<Engine>> = OnceLock::new();
 
 /// The connection mode is Apple Driver: this engine serves the Apple workspace.
 static IN_USE: AtomicBool = AtomicBool::new(false);
+/// False while Apple Mobile Device Service (usbmuxd) cannot be reached: Apple mode then asks
+/// for Apple Devices / iTunes instead of showing nothing.
+pub static USBMUX_OK: AtomicBool = AtomicBool::new(true);
+/// The last device-list error, logged once per change.
+static LAST_USB_ERR: Mutex<String> = Mutex::new(String::new());
 /// From the backend's state: the device picked in the list, and Wi-Fi (wireless) vs USB.
 static PICKED: Mutex<Option<String>> = Mutex::new(None);
 static WIRELESS: AtomicBool = AtomicBool::new(false);
@@ -589,11 +594,24 @@ impl Engine {
 
     async fn refresh_usb(&self) {
         // A hung usbmuxd/lockdown call must not stall the device list for good.
-        let list = tokio::time::timeout(Duration::from_secs(10), link::usb_devices())
-            .await
-            .ok()
-            .and_then(Result::ok)
-            .unwrap_or_default();
+        // Issue #9: a missing Apple Mobile Device Service used to leave the list empty silently.
+        let list = match tokio::time::timeout(Duration::from_secs(10), link::usb_devices()).await {
+            Ok(Ok(list)) => {
+                USBMUX_OK.store(true, Relaxed);
+                *LAST_USB_ERR.lock().unwrap() = String::new();
+                list
+            }
+            Ok(Err(e)) => {
+                USBMUX_OK.store(!e.starts_with(link::SERVICE_ERR), Relaxed);
+                let mut last = LAST_USB_ERR.lock().unwrap();
+                if *last != e {
+                    log::warn!("apple: device list: {e}");
+                    *last = e;
+                }
+                Vec::new()
+            }
+            Err(_) => Vec::new(),
+        };
         let mut usb = Vec::new();
         for (udid, paired) in list {
             if paired && !self.info.lock().unwrap().contains_key(&udid) {
@@ -962,7 +980,13 @@ impl Engine {
                 None,
             );
             tokio::select! {
-                r = l.ensure_ddi(&version, |_| {}) => r?,
+                r = l.ensure_ddi(&version, |_| {}) => r.map_err(|e| {
+                    if e == link::DEV_MODE_OFF {
+                        crate::i18n::tr("Developer Mode is off. On the iPhone/iPad open Settings › Privacy & Security › Developer Mode, turn it on, restart the device, tap Turn On, then try again.")
+                    } else {
+                        e
+                    }
+                })?,
                 _ = stopped() => return Ok(()),
             }
         }

@@ -187,7 +187,11 @@ fn need(s: &State, d: &Value) -> Option<&'static str> {
             },
         );
     }
-    replaced.then_some("restore")
+    if replaced {
+        return Some("restore");
+    }
+    // Issue #9: Windows sees the device, but without the Apple service Apple mode cannot.
+    (!crate::apple::USBMUX_OK.load(Relaxed)).then_some("service")
 }
 
 /// Devices from Windows' own device list (no Apple service, no USB I/O).
@@ -256,7 +260,7 @@ fn snapshot(s: &mut State) -> Value {
     json!({
         "phase": if s.error.is_some() { "error" } else { "idle" },
         "detail": "", "device": null, "error": s.error, "rotation": null, "backend": null, "control": null,
-        "devices": devices, "known": known, "selected": selected, "service": true, "takenOver": false,
+        "devices": devices, "known": known, "selected": selected, "service": crate::apple::USBMUX_OK.load(Relaxed), "takenOver": false,
         "connection": conn_snapshot(&s.conn), "drivers": s.drivers, "capture": null, "nativeAudio": true,
     })
 }

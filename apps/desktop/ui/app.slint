@@ -429,6 +429,7 @@ component Placeholder inherits Rectangle {
         : [I18n.t("Plug the iPhone/iPad into the PC with a USB cable."),
             I18n.t("Unlock its screen."),
             I18n.t("If it asks \"Trust this computer?\", tap Trust and enter the passcode."),
+            I18n.t("First time only: turn on Developer Mode in Settings › Privacy & Security › Developer Mode, restart the device and tap Turn On. If the switch is missing, press Start once: ZenLink makes it appear."),
             s-start];
     property <bool> show-steps: message == "" && !(device != "" && need != "") && steps.length > 0;
     property <bool> air: link == "wireless";
@@ -436,6 +437,7 @@ component Placeholder inherits Rectangle {
     property <string> need-label: need == "trust" ? I18n.t("Needs Trust")
         : need == "wifi" ? I18n.t("Wi-Fi not set up")
         : need == "mode" ? I18n.t("Choose a mode")
+        : need == "service" ? I18n.t("Needs Apple Devices")
         : I18n.t("Needs a driver");
     property <string> need-title: need == "restore" ? I18n.t("Restore the Apple driver")
         : need == "bind" ? I18n.t("Install the ZenLink Studio driver")
@@ -443,6 +445,7 @@ component Placeholder inherits Rectangle {
         : need == "removefilter" ? I18n.t("Remove the libusb0 filter first")
         : need == "mode" ? I18n.t("Choose a connection mode")
         : need == "wifi" ? I18n.t("Wi-Fi is not set up yet")
+        : need == "service" ? I18n.t("Install Apple Devices")
         : I18n.t("Unlock it and tap Trust");
     property <string> need-hint: need == "restore" ? I18n.t("This device uses the ZenLink Studio driver, so Apple mode cannot see it. Restore the Apple driver, or switch to ZenLink Studio.")
         : need == "bind" ? I18n.t("ZenLink Studio uses the libusb0 driver on the device. Install it, or switch to Apple Driver mode.")
@@ -450,6 +453,7 @@ component Placeholder inherits Rectangle {
         : need == "removefilter" ? I18n.t("A libusb0 filter is stacked on the Apple driver. It can crash Windows.")
         : need == "mode" ? I18n.t("Pick Apple Driver or ZenLink Studio to continue.")
         : need == "wifi" ? I18n.t("Plug in the cable once, then press Set up Wi-Fi in Settings. Or choose Wired.")
+        : need == "service" ? I18n.t("Windows sees the device, but Apple Mobile Device Service is not running. Install Apple Devices from the Microsoft Store (or iTunes), then plug the cable in again. Or switch to ZenLink Studio.")
         : I18n.t("Unlock the device, tap Trust if it asks, then try again.");
     property <[[string]]> texts: flow-kind == "usbdirect" ? [
             [I18n.t("Detect device"), I18n.t("Found on USB through the libusb0 driver")],
@@ -670,6 +674,7 @@ component Placeholder inherits Rectangle {
                     : need == "bind" ? I18n.t("Install driver")
                     : need == "removefilter" ? I18n.t("Remove filter")
                     : need == "mode" ? I18n.t("Choose mode")
+                    : need == "service" ? I18n.t("Get Apple Devices")
                     : I18n.t("Open settings");
                 clicked => { root.fix(); }
             }
