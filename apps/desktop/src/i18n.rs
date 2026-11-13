@@ -1,6 +1,6 @@
 //! UI languages as gettext `.po` files. English texts are the keys (`msgid`); a language file
-//! gives their translations (`msgstr`). Built in: English and `id.po` (Bahasa Indonesia, from
-//! `ZenshiroDev/resources/lang`). More languages, or fixes to a built-in one, are `<code>.po`
+//! gives their translations (`msgstr`). Built in: English, `id.po` (Bahasa Indonesia) and
+//! `zh_CN.po` (Simplified Chinese), from `ZenshiroDev/resources/lang`. More languages, or fixes to a built-in one, are `<code>.po`
 //! files in a `lang` folder next to ZenLink.exe or in `%LOCALAPPDATA%\ZenLink-Next\lang`;
 //! ZenLink lists them in Settings without a rebuild. `ZenshiroDev/resources/lang/README.md`
 //! explains how to translate.
@@ -9,11 +9,16 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock, RwLock};
 
-const BUILT_IN: &[(&str, &str)] = &[(
-    "id",
-    include_str!("../../../ZenshiroDev/resources/lang/id.po"),
-    include_str!("../../../ZenshiroDev/resources/lang/zh_CN.po"),
-)];
+const BUILT_IN: &[(&str, &str)] = &[
+    (
+        "id",
+        include_str!("../../../ZenshiroDev/resources/lang/id.po"),
+    ),
+    (
+        "zh_CN",
+        include_str!("../../../ZenshiroDev/resources/lang/zh_CN.po"),
+    ),
+];
 
 /// The chosen language's texts (empty for English).
 static CURRENT: RwLock<Option<HashMap<String, String>>> = RwLock::new(None);
@@ -65,7 +70,8 @@ pub fn languages() -> Vec<(String, String)> {
 fn find() -> Vec<(String, String)> {
     let mut out = vec![("en".to_string(), "English".to_string())];
     let mut add = |code: &str, text: &str| {
-        if code != "en" && !out.iter().any(|(c, _)| c == code) {
+        // Folder files come lowercased ("zh_cn"): the same language as built-in "zh_CN".
+        if code != "en" && !out.iter().any(|(c, _)| c.eq_ignore_ascii_case(code)) {
             let name = parse(text).1.unwrap_or_else(|| code.to_string());
             out.push((code.to_string(), name));
         }
@@ -106,7 +112,7 @@ fn find() -> Vec<(String, String)> {
 fn load(code: &str) -> Option<HashMap<String, String>> {
     let mut map = HashMap::new();
     let mut found = false;
-    if let Some((_, text)) = BUILT_IN.iter().find(|(c, _)| *c == code) {
+    if let Some((_, text)) = BUILT_IN.iter().find(|(c, _)| c.eq_ignore_ascii_case(code)) {
         map.extend(parse(text).0);
         found = true;
     }
@@ -246,9 +252,18 @@ mod tests {
             v.sort();
             v
         };
-        for (en, id) in parse(BUILT_IN[0].1).0 {
-            assert_eq!(names(&en), names(&id), "{en:?}");
+        for (code, text) in BUILT_IN {
+            for (en, tr) in parse(text).0 {
+                assert_eq!(names(&en), names(&tr), "{code}: {en:?}");
+            }
         }
+    }
+
+    #[test]
+    fn built_in_chinese_loads() {
+        let (m, name) = parse(BUILT_IN[1].1);
+        assert_eq!(name.as_deref(), Some("简体中文"));
+        assert_eq!(m.get("Start").map(String::as_str), Some("开始"));
     }
 
     #[test]
