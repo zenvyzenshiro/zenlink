@@ -4,6 +4,9 @@ Full notes for each version are on the [Releases](https://github.com/zenvyzenshi
 
 ## 2.5.16
 
+### Added
+- **TikTok LIVE Studio Game capture**: a new window, "ZenLink Game Capture", shows only the phone picture at its own resolution (1:1). In TikTok LIVE Studio add a Game source and pick ZenLink Game Capture. TikTok only captures the window it is given, and the picture in the main window is a child window, so it captured the window frame (black) instead. OBS works as before.
+
 ### Fixed
 - **ZenLink closed a few seconds after finding an iPhone** (issue #9, seen on an iPhone 17 with iOS 27): the automatic Wi-Fi setup sent an empty pairing PIN, which crashed ZenLink. It now uses the fixed PIN iOS expects after Trust; if the iPhone refuses it, only the Wi-Fi setup is skipped.
 

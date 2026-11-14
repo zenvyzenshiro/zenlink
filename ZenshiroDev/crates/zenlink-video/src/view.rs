@@ -57,6 +57,8 @@ struct Inner {
     ring: SharedRing,
     stats: Arc<Stats>,
     hwnd: isize,
+    /// Off-screen top-level window with a copy of the picture (see `present_capture`); 0 = none.
+    capture_hwnd: isize,
     stop_render: AtomicBool,
     rotation: AtomicU32,
     fit: AtomicU8,
@@ -338,7 +340,44 @@ fn register_class() {
             ..Default::default()
         };
         RegisterClassExW(&wc);
+        RegisterClassExW(&WNDCLASSEXW {
+            lpfnWndProc: Some(capture_wndproc),
+            lpszClassName: w!("ZenLinkCapture"),
+            ..wc
+        });
     });
+}
+
+unsafe extern "system" fn capture_wndproc(h: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
+    unsafe { DefWindowProcW(h, msg, wp, lp) }
+}
+
+/// The window behind `present_capture`: owned by the main window (no taskbar or Alt+Tab
+/// entry, hidden with it), shown but off every screen, never activated.
+fn create_capture_window(parent: HWND) -> isize {
+    unsafe {
+        let root = GetAncestor(parent, GA_ROOT);
+        let x = GetSystemMetrics(SM_XVIRTUALSCREEN) - 4000;
+        let Ok(module) = GetModuleHandleW(None) else {
+            return 0;
+        };
+        CreateWindowExW(
+            WS_EX_NOACTIVATE,
+            w!("ZenLinkCapture"),
+            w!("ZenLink Game Capture"),
+            WS_POPUP | WS_VISIBLE,
+            x,
+            0,
+            640,
+            360,
+            Some(root),
+            None,
+            Some(module.into()),
+            None,
+        )
+        .inspect_err(|e| log::warn!("capture window: {e}"))
+        .map_or(0, |h| h.0 as isize)
+    }
 }
 
 impl VideoView {
@@ -371,6 +410,7 @@ impl VideoView {
             ring: Arc::new(Mutex::new(Ring::default())),
             stats: Arc::new(Stats::default()),
             hwnd: hwnd.0 as isize,
+            capture_hwnd: create_capture_window(hwnd),
             stop_render: AtomicBool::new(false),
             rotation: AtomicU32::new(0),
             fit: AtomicU8::new(Fit::Contain as u8),
@@ -621,6 +661,9 @@ impl Drop for VideoView {
             let hwnd = HWND(self.inner.hwnd as _);
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
             let _ = DestroyWindow(hwnd);
+            if self.inner.capture_hwnd != 0 {
+                let _ = DestroyWindow(HWND(self.inner.capture_hwnd as _));
+            }
         }
     }
 }
@@ -976,6 +1019,8 @@ fn render_session(inner: &Inner) -> Result<()> {
         // new frames only at a refresh), for A/B measurements.
         let on_arrival = std::env::var("ZL_PRESENT").map_or(true, |v| v != "vblank");
         let mut handled_resize = 0u64;
+        let mut capture_hwnd = HWND(inner.capture_hwnd as _);
+        let mut capture: Option<Capture> = None;
 
         while !inner.stop_render.load(Relaxed) {
             let t_wait = std::time::Instant::now();
@@ -1053,6 +1098,7 @@ fn render_session(inner: &Inner) -> Result<()> {
                 ((bg >> 8) & 255) as f32 / 255.0,
                 (bg & 255) as f32 / 255.0,
             );
+            let mut cap_frame = None;
             match frame {
                 Some((tex, w, h, mut src, seq)) => {
                     let c: Vec<i32> = inner.crop.iter().map(|a| a.load(Relaxed) as i32).collect();
@@ -1061,6 +1107,9 @@ fn render_session(inner: &Inner) -> Result<()> {
                     src.right -= c[2].min(sw / 2);
                     src.top += c[1].min(sh / 2);
                     src.bottom -= c[3].min(sh / 2);
+                    // Presented as often as the picture (also when the frame repeats), so a
+                    // capture never waits on a still screen.
+                    cap_frame = Some((tex.clone(), w, h, src));
                     if proc_.as_ref().map(|p| p.key) != Some((w, h, cw, ch)) {
                         proc_ = match make_processor(gpu, w, h, cw, ch) {
                             Ok(p) => Some(p),
@@ -1187,6 +1236,15 @@ fn render_session(inner: &Inner) -> Result<()> {
                         .ClearRenderTargetView(rtv.as_ref().unwrap(), &[br, bgc, bb, 1.0]);
                 }
             }
+            if let (false, Some((tex, w, h, src))) = (capture_hwnd.is_invalid(), &cap_frame) {
+                let rot = inner.rotation.load(Relaxed);
+                if let Err(e) = present_capture(gpu, &factory, capture_hwnd, tex, *w, *h, *src, rot, &mut capture) {
+                    // The main picture must not suffer for it: stop copying.
+                    log::warn!("capture window: {e}");
+                    capture_hwnd = HWND::default();
+                    capture = None;
+                }
+            }
             drop(back);
             let t_present = std::time::Instant::now();
             if sc.Present(1, DXGI_PRESENT(0)).is_ok() {
@@ -1209,6 +1267,106 @@ fn render_session(inner: &Inner) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/// TikTok LIVE Studio's Game Capture only takes a swap chain that presents to the window
+/// picked in its list, and the picture is a child window, so it took the OpenGL UI window
+/// (black) instead. This copies each shown frame to a swap chain on a top-level window,
+/// "ZenLink Game Capture", which TikTok can pick. OBS Game Capture keeps working either way.
+unsafe fn present_capture(
+    gpu: &Gpu,
+    factory: &IDXGIFactory2,
+    hwnd: HWND,
+    tex: &ID3D11Texture2D,
+    w: u32,
+    h: u32,
+    src: RECT,
+    rot: u32,
+    cap: &mut Option<Capture>,
+) -> Result<()> {
+    // 1:1 with the phone's own pixels (rotation and crop applied), not the view's size.
+    let (sw, sh) = ((src.right - src.left).max(1) as u32, (src.bottom - src.top).max(1) as u32);
+    let (ow, oh) = if rot == 90 || rot == 270 { (sh, sw) } else { (sw, sh) };
+    unsafe {
+        if cap.is_none() {
+            let desc = DXGI_SWAP_CHAIN_DESC1 {
+                Width: ow,
+                Height: oh,
+                Format: DXGI_FORMAT_B8G8R8A8_UNORM,
+                SampleDesc: DXGI_SAMPLE_DESC { Count: 1, Quality: 0 },
+                BufferUsage: DXGI_USAGE_RENDER_TARGET_OUTPUT,
+                BufferCount: 2,
+                Scaling: DXGI_SCALING_STRETCH,
+                SwapEffect: DXGI_SWAP_EFFECT_FLIP_DISCARD,
+                AlphaMode: DXGI_ALPHA_MODE_IGNORE,
+                ..Default::default()
+            };
+            let sc = factory.CreateSwapChainForHwnd(&gpu.device, hwnd, &desc, None, None)?;
+            *cap = Some(Capture { sc, size: (ow, oh), proc_: None });
+        }
+        let c = cap.as_mut().unwrap();
+        if c.size != (ow, oh) {
+            c.proc_ = None;
+            c.sc.ResizeBuffers(0, ow, oh, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG(0))?;
+            c.size = (ow, oh);
+        }
+        if c.proc_.as_ref().map(|p| p.key) != Some((w, h, ow, oh)) {
+            c.proc_ = Some(make_processor(gpu, w, h, ow, oh)?);
+        }
+        let p = c.proc_.as_ref().unwrap();
+        let vc = &gpu.video_context;
+        let rotation = match rot {
+            90 => D3D11_VIDEO_PROCESSOR_ROTATION_90,
+            180 => D3D11_VIDEO_PROCESSOR_ROTATION_180,
+            270 => D3D11_VIDEO_PROCESSOR_ROTATION_270,
+            _ => D3D11_VIDEO_PROCESSOR_ROTATION_IDENTITY,
+        };
+        let full = RECT { left: 0, top: 0, right: ow as i32, bottom: oh as i32 };
+        vc.VideoProcessorSetStreamRotation(&p.vp, 0, rot != 0, rotation);
+        vc.VideoProcessorSetStreamSourceRect(&p.vp, 0, true, Some(&src));
+        vc.VideoProcessorSetStreamDestRect(&p.vp, 0, true, Some(&full));
+        vc.VideoProcessorSetOutputTargetRect(&p.vp, true, Some(&full));
+        let in_desc = D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC {
+            FourCC: 0,
+            ViewDimension: D3D11_VPIV_DIMENSION_TEXTURE2D,
+            Anonymous: D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC_0 {
+                Texture2D: D3D11_TEX2D_VPIV { MipSlice: 0, ArraySlice: 0 },
+            },
+        };
+        let mut iv = None;
+        gpu.video_device.CreateVideoProcessorInputView(tex, &p.enumr, &in_desc, Some(&mut iv))?;
+        let back: ID3D11Texture2D = c.sc.GetBuffer(0)?;
+        let out_desc = D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC {
+            ViewDimension: D3D11_VPOV_DIMENSION_TEXTURE2D,
+            Anonymous: D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC_0 {
+                Texture2D: D3D11_TEX2D_VPOV { MipSlice: 0 },
+            },
+        };
+        let mut ov = None;
+        gpu.video_device.CreateVideoProcessorOutputView(&back, &p.enumr, &out_desc, Some(&mut ov))?;
+        let mut streams = [D3D11_VIDEO_PROCESSOR_STREAM {
+            Enable: true.into(),
+            pInputSurface: ManuallyDrop::new(iv),
+            ..Default::default()
+        }];
+        let r = vc.VideoProcessorBlt(&p.vp, ov.as_ref().unwrap(), 0, &streams);
+        ManuallyDrop::drop(&mut streams[0].pInputSurface);
+        drop(back);
+        r?;
+        // Never block the picture's render thread on this window (DWM shows none of it).
+        let hr = c.sc.Present(0, DXGI_PRESENT_DO_NOT_WAIT);
+        if hr == DXGI_ERROR_WAS_STILL_DRAWING {
+            return Ok(());
+        }
+        hr.ok()
+    }
+}
+
+/// The capture window's swap chain and its own scaler (see `present_capture`).
+struct Capture {
+    sc: IDXGISwapChain1,
+    size: (u32, u32),
+    proc_: Option<Processor>,
 }
 
 /// Rounded rectangle of the view minus the holes (converted to the view's
