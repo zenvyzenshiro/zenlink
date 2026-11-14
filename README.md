@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/latest"><img src="https://img.shields.io/badge/⬇_Download-v2.5.15-FF4FA3?style=for-the-badge" alt="Download v2.5.15"></a>
+  <a href="../../releases/latest"><img src="https://img.shields.io/badge/⬇_Download-v2.5.16-FF4FA3?style=for-the-badge" alt="Download v2.5.16"></a>
   <a href="https://zenvyzenshiro.github.io/zenlink/"><img src="https://img.shields.io/badge/Website-zenlink-1f1f2e?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website"></a>
 </p>
 

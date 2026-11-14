@@ -2,6 +2,11 @@
 
 Full notes for each version are on the [Releases](https://github.com/zenvyzenshiro/zenlink/releases) page.
 
+## 2.5.16
+
+### Fixed
+- **ZenLink closed a few seconds after finding an iPhone** (issue #9, seen on an iPhone 17 with iOS 27): the automatic Wi-Fi setup sent an empty pairing PIN, which crashed ZenLink. It now uses the fixed PIN iOS expects after Trust; if the iPhone refuses it, only the Wi-Fi setup is skipped.
+
 ## 2.5.15
 
 ### Added
