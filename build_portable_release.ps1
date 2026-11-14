@@ -93,7 +93,10 @@ Copy-Item "ZenshiroDev\resources\third_party\scrcpy\LICENSE" $scrcpyDest
 # Credits and licences of everything bundled (scrcpy, adb, FFmpeg, ...).
 Copy-Item "ZenshiroDev\docs\THIRD_PARTY.md" $app
 $cargoProfile = if ($Fast) { "fast" } else { "release" }
-& cargo build --profile $cargoProfile --manifest-path Cargo.toml -p zenlink-app
+# Panic messages carry source paths; keep the builder's user name out of the exe
+# (~\.cargo\registry\... instead of C:\Users\<name>\...). Merged with .cargo\config.toml.
+$remap = "target.x86_64-pc-windows-msvc.rustflags=['--remap-path-prefix=$env:USERPROFILE=~']"
+& cargo build --profile $cargoProfile --manifest-path Cargo.toml -p zenlink-app --config $remap
 if ($LASTEXITCODE) { throw "cargo failed" }
 # CARGO_TARGET_DIR lets the release build while a dev ZenLink.exe from
 # target\ is open (Windows locks a running exe).
@@ -119,7 +122,7 @@ Write-Host "[2/3] Building the portable single-file ZenLink.exe..." -ForegroundC
 # Same app with the DLLs and the driver kit packed in; settings in %LOCALAPPDATA%\ZenLink-Next.
 # Kept outside out\build (emptied each run), so only the changed crates rebuild.
 $portableTarget = Join-Path $rustTarget "portable"
-& cargo build --profile $cargoProfile --manifest-path Cargo.toml -p zenlink-app --features portable --target-dir $portableTarget
+& cargo build --profile $cargoProfile --manifest-path Cargo.toml -p zenlink-app --features portable --target-dir $portableTarget --config $remap
 if ($LASTEXITCODE) { throw "cargo (portable) failed" }
 Copy-Item (Join-Path $portableTarget "$cargoProfile\ZenLink.exe") (Join-Path $release "ZenLink-v$Version-Portable.exe")
 Invoke-Sign @(Join-Path $release "ZenLink-v$Version-Portable.exe")

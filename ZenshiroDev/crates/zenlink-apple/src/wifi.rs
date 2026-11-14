@@ -226,7 +226,9 @@ pub async fn prepare(udid: &str) -> Result<bool, String> {
             .into_client(&host)
             .map_err(|e| format!("{e:?}"))?;
         client
-            .connect(&mut file, || async { String::new() })
+            // idevice slices pin[..6] and panics on a shorter one (#9, iOS 27); a
+            // wrong PIN only fails SRP. "000000" is what idevice itself uses over USB.
+            .connect(&mut file, || async { "000000".to_string() })
             .await
             .map_err(|e| format!("{e:?}"))
     }
