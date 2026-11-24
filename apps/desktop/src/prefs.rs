@@ -28,14 +28,26 @@ pub fn system_lang() -> String {
 }
 
 fn lang_from(tags: &[String], have: &[String]) -> String {
-    tags.iter()
-        .map(|t| t.to_ascii_lowercase())
-        .map(|t| match t.split('-').next().unwrap_or("") {
-            "in" => "id".to_string(), // the old code for Indonesian
-            base => base.to_string(),
-        })
-        .find(|base| base != "en" && have.contains(base))
-        .unwrap_or_else(|| "en".into())
+    for t in tags {
+        let t = t.to_ascii_lowercase();
+        let mut parts = t.split(['-', '_']);
+        let base = match parts.next().unwrap_or("") {
+            "in" => "id", // the old code for Indonesian
+            base => base,
+        };
+        if base == "en" {
+            continue;
+        }
+        // A file for the region first ("zh-Hans-CN" -> "zh_CN"; the script is skipped), then
+        // one for the language alone ("id-ID" -> "id").
+        let region = parts.find(|p| p.len() == 2).map(|r| format!("{base}_{r}"));
+        for want in region.as_deref().into_iter().chain([base]) {
+            if let Some(code) = have.iter().find(|c| c.eq_ignore_ascii_case(want)) {
+                return code.clone();
+            }
+        }
+    }
+    "en".into()
 }
 
 /// Language tags from HKCU\Control Panel\International: the user's
@@ -372,6 +384,26 @@ mod tests {
         assert_eq!(lang_from(&tags(&["it-IT"]), &have), "en", "no Italian file");
         assert_eq!(lang_from(&tags(&["it-IT"]), &tags(&["en", "it"])), "it");
         assert_eq!(lang_from(&[], &have), "en");
+    }
+
+    #[test]
+    fn language_with_a_region_file_follows_windows() {
+        let tags = |l: &[&str]| l.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        let have = tags(&["en", "id", "zh_CN", "ja"]);
+        // User Profile\Languages and LocaleName of a Simplified Chinese Windows.
+        assert_eq!(lang_from(&tags(&["zh-Hans-CN"]), &have), "zh_CN");
+        assert_eq!(lang_from(&tags(&["en-US", "zh-CN"]), &have), "zh_CN");
+        assert_eq!(
+            lang_from(&tags(&["zh-Hant-TW"]), &have),
+            "en",
+            "Traditional Chinese is not zh_CN"
+        );
+        assert_eq!(lang_from(&tags(&["ja-JP"]), &have), "ja");
+        // A lowercased folder file ("pt_br.po") for a region tag.
+        assert_eq!(
+            lang_from(&tags(&["pt-BR"]), &tags(&["en", "pt_br"])),
+            "pt_br"
+        );
     }
 
     #[test]
