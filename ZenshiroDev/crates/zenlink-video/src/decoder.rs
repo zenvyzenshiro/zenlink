@@ -367,20 +367,44 @@ fn publish(
                 *upload = Some((gpu.nv12_texture(w, h, true)?, w, h));
             }
             let up = &upload.as_ref().unwrap().0;
-            let b2: IMF2DBuffer = buffer.cast()?;
+
+            // Microsoft's software HEVC MFT writes into the plain
+            // IMFMediaBuffer we hand to ProcessOutput (MFCreateMemoryBuffer),
+            // and that one does not implement IMF2DBuffer. Fall back to Lock()
+            // and derive the stride from the buffer size the decoder asked for
+            // (NV12 is h + h/2 rows).
+            let rows = h as usize + h as usize / 2;
             let mut src = std::ptr::null_mut();
-            let mut pitch = 0i32;
-            b2.Lock2D(&mut src, &mut pitch)?;
+            let b2 = buffer.cast::<IMF2DBuffer>().ok();
+            let mut pitch;
+            let mut locked_2d = false;
+            if let Some(b2) = b2.as_ref() {
+                let mut p = 0i32;
+                b2.Lock2D(&mut src, &mut p)?;
+                pitch = p.max(0) as usize;
+                locked_2d = true;
+            } else {
+                buffer.Lock(&mut src, None, None)?;
+                pitch = (mft.out_size as usize) / rows.max(1);
+                log::debug!(
+                    "decoder software buffer: {} bytes, {} rows, stride {}",
+                    mft.out_size,
+                    rows,
+                    pitch
+                );
+            }
+            if pitch == 0 {
+                pitch = w as usize;
+            }
             let mut m = D3D11_MAPPED_SUBRESOURCE::default();
             if gpu
                 .context
                 .Map(up, 0, D3D11_MAP_WRITE_DISCARD, 0, Some(&mut m))
                 .is_ok()
             {
-                let rows = h as usize + h as usize / 2;
                 for y in 0..rows {
                     std::ptr::copy_nonoverlapping(
-                        src.add(y * pitch as usize),
+                        src.add(y * pitch),
                         (m.pData as *mut u8).add(y * m.RowPitch as usize),
                         w as usize,
                     );
@@ -388,7 +412,13 @@ fn publish(
                 gpu.context.Unmap(up, 0);
                 gpu.context.CopyResource(&dst, up);
             }
-            b2.Unlock2D()?;
+            if locked_2d {
+                if let Some(b2) = b2.as_ref() {
+                    b2.Unlock2D()?;
+                }
+            } else {
+                buffer.Unlock()?;
+            }
         }
         let mut r = ring.lock().unwrap();
         let dropped = r.push(idx);
