@@ -102,12 +102,44 @@ impl Gpu {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ColorMatrix {
+    Bt709,
+    Bt601,
+    Bt2020,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ColorTransfer {
+    Sdr,
+    Pq,
+    Hlg,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ColorInfo {
+    pub full_range: bool,
+    pub matrix: ColorMatrix,
+    pub transfer: ColorTransfer,
+}
+
+impl Default for ColorInfo {
+    fn default() -> Self {
+        Self {
+            full_range: false,
+            matrix: ColorMatrix::Bt709,
+            transfer: ColorTransfer::Sdr,
+        }
+    }
+}
+
 pub struct Slot {
     pub tex: ID3D11Texture2D,
     pub w: u32,
     pub h: u32,
     /// Visible part of the coded picture (decoders pad to 16 / 32 lines).
     pub src: RECT,
+    pub color: ColorInfo,
 }
 
 /// Frames handed from the decoder to the screen, oldest first.

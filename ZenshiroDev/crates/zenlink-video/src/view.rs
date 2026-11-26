@@ -17,7 +17,7 @@ use windows::Win32::UI::WindowsAndMessaging::*;
 
 use zenlink_core::source::VideoSource;
 
-use crate::d3d::{Gpu, Ring, SharedRing};
+use crate::d3d::{ColorInfo, ColorMatrix, ColorTransfer, Gpu, Ring, SharedRing};
 use crate::decoder;
 use crate::stats::{RateMeter, Stats, StatsSnapshot};
 
@@ -173,7 +173,10 @@ pub fn picture_rect(cw: i32, ch: i32, sw: u32, sh: u32, rotation: u32, fit: Fit)
     } else {
         sx.min(sy)
     };
-    let (dw, dh) = ((pw * s).round() as i32, (ph * s).round() as i32);
+    let (dw, dh) = (
+        (pw * s).round().max(1.0) as i32,
+        (ph * s).round().max(1.0) as i32,
+    );
     let (x, y) = ((cw - dw) / 2, (ch - dh) / 2);
     RECT {
         left: x,
@@ -671,10 +674,47 @@ impl Drop for VideoView {
 struct Processor {
     enumr: ID3D11VideoProcessorEnumerator,
     vp: ID3D11VideoProcessor,
-    key: (u32, u32, u32, u32),
+    key: (u32, u32, u32, u32, ColorInfo),
 }
 
-fn make_processor(gpu: &Gpu, iw: u32, ih: u32, ow: u32, oh: u32) -> Result<Processor> {
+fn dxgi_input_color_space(c: ColorInfo) -> DXGI_COLOR_SPACE_TYPE {
+    match (c.matrix, c.transfer, c.full_range) {
+        (ColorMatrix::Bt2020, ColorTransfer::Pq, _) => {
+            DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020
+        }
+        (ColorMatrix::Bt2020, ColorTransfer::Hlg, true) => {
+            DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020
+        }
+        (ColorMatrix::Bt2020, ColorTransfer::Hlg, false) => {
+            DXGI_COLOR_SPACE_YCBCR_STUDIO_GHLG_TOPLEFT_P2020
+        }
+        (ColorMatrix::Bt2020, ColorTransfer::Sdr, true) => {
+            DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020
+        }
+        (ColorMatrix::Bt2020, ColorTransfer::Sdr, false) => {
+            DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020
+        }
+        (ColorMatrix::Bt601, _, true) => DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601,
+        (ColorMatrix::Bt601, _, false) => DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601,
+        (ColorMatrix::Bt709, _, true) => DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709,
+        (ColorMatrix::Bt709, _, false) => DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
+    }
+}
+
+fn legacy_stream_color_bitfield(c: ColorInfo) -> u32 {
+    let matrix_bit = if c.matrix == ColorMatrix::Bt601 { 0 } else { 0x04 };
+    let nominal_bits = if c.full_range { 0x20 } else { 0x10 };
+    matrix_bit | nominal_bits
+}
+
+fn make_processor(
+    gpu: &Gpu,
+    iw: u32,
+    ih: u32,
+    ow: u32,
+    oh: u32,
+    color: ColorInfo,
+) -> Result<Processor> {
     unsafe {
         let desc = D3D11_VIDEO_PROCESSOR_CONTENT_DESC {
             InputFrameFormat: D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE,
@@ -697,20 +737,74 @@ fn make_processor(gpu: &Gpu, iw: u32, ih: u32, ow: u32, oh: u32) -> Result<Proce
         let vc = &gpu.video_context;
         vc.VideoProcessorSetStreamFrameFormat(&vp, 0, D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE);
         vc.VideoProcessorSetStreamAutoProcessingMode(&vp, 0, false);
-        // BT.709, studio range in; full-range RGB out.
-        vc.VideoProcessorSetStreamColorSpace(
-            &vp,
-            0,
-            &D3D11_VIDEO_PROCESSOR_COLOR_SPACE { _bitfield: 0x14 },
-        );
-        vc.VideoProcessorSetOutputColorSpace(
-            &vp,
-            &D3D11_VIDEO_PROCESSOR_COLOR_SPACE { _bitfield: 0 },
+        let in_cs = dxgi_input_color_space(color);
+        let out_cs = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+        let mut used_v1 = false;
+        if let (Ok(vc1), Ok(enumr1)) = (
+            vc.cast::<ID3D11VideoContext1>(),
+            enumr.cast::<ID3D11VideoProcessorEnumerator1>(),
+        ) {
+            let mut chosen = enumr1
+                .CheckVideoProcessorFormatConversion(
+                    DXGI_FORMAT_NV12,
+                    in_cs,
+                    DXGI_FORMAT_B8G8R8A8_UNORM,
+                    out_cs,
+                )
+                .map(|b| b.as_bool())
+                .unwrap_or(false)
+                .then_some(in_cs);
+            if chosen.is_none() && color.matrix == ColorMatrix::Bt2020 {
+                let sdr_709 = if color.full_range {
+                    DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709
+                } else {
+                    DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709
+                };
+                if enumr1
+                    .CheckVideoProcessorFormatConversion(
+                        DXGI_FORMAT_NV12,
+                        sdr_709,
+                        DXGI_FORMAT_B8G8R8A8_UNORM,
+                        out_cs,
+                    )
+                    .map(|b| b.as_bool())
+                    .unwrap_or(false)
+                {
+                    chosen = Some(sdr_709);
+                }
+            }
+            if let Some(cs) = chosen {
+                vc1.VideoProcessorSetStreamColorSpace1(&vp, 0, cs);
+                vc1.VideoProcessorSetOutputColorSpace1(&vp, out_cs);
+                used_v1 = true;
+            }
+        }
+        if !used_v1 {
+            vc.VideoProcessorSetStreamColorSpace(
+                &vp,
+                0,
+                &D3D11_VIDEO_PROCESSOR_COLOR_SPACE {
+                    _bitfield: legacy_stream_color_bitfield(color),
+                },
+            );
+            vc.VideoProcessorSetOutputColorSpace(
+                &vp,
+                &D3D11_VIDEO_PROCESSOR_COLOR_SPACE { _bitfield: 0 },
+            );
+        }
+        log::info!(
+            "video processor {}x{} -> {}x{}, color {:?}, v1={}",
+            iw,
+            ih,
+            ow,
+            oh,
+            color,
+            used_v1
         );
         Ok(Processor {
             enumr,
             vp,
-            key: (iw, ih, ow, oh),
+            key: (iw, ih, ow, oh, color),
         })
     }
 }
@@ -1056,6 +1150,21 @@ fn render_session(inner: &Inner) -> Result<()> {
             let asked = inner.resized.lock().unwrap().0;
             let mut rc = RECT::default();
             let _ = GetClientRect(hwnd, &mut rc);
+            let root = GetAncestor(hwnd, GA_ROOT);
+            let hidden = !IsWindowVisible(hwnd).as_bool()
+                || (!root.is_invalid() && IsIconic(root).as_bool())
+                || rc.right <= 1
+                || rc.bottom <= 1;
+            if hidden {
+                let mut g = inner.resized.lock().unwrap();
+                if g.1 < asked {
+                    g.1 = asked;
+                    inner.resized_cv.notify_all();
+                }
+                drop(g);
+                std::thread::sleep(std::time::Duration::from_millis(30));
+                continue;
+            }
             let (nw, nh) = (rc.right.max(1) as u32, rc.bottom.max(1) as u32);
             if (nw, nh) != (cw, ch) {
                 proc_ = None;
@@ -1070,10 +1179,6 @@ fn render_session(inner: &Inner) -> Result<()> {
                 (cw, ch) = (nw, nh);
                 shown_seq = u64::MAX;
             }
-            if !IsWindowVisible(hwnd).as_bool() {
-                std::thread::sleep(std::time::Duration::from_millis(30));
-                continue;
-            }
             let frame = {
                 // One queued frame per refresh (see Ring): no frame is
                 // thrown away just because two arrived close together.
@@ -1086,7 +1191,7 @@ fn render_session(inner: &Inner) -> Result<()> {
                     Some(s) => {
                         let (n, ready) = slot.map_or((0, None), |i| r.meta[i]);
                         shown_frame = (n, ready);
-                        Some((s.tex.clone(), s.w, s.h, s.src, r.seq))
+                        Some((s.tex.clone(), s.w, s.h, s.src, s.color, r.seq))
                     }
                     None => None,
                 }
@@ -1100,7 +1205,7 @@ fn render_session(inner: &Inner) -> Result<()> {
             );
             let mut cap_frame = None;
             match frame {
-                Some((tex, w, h, mut src, seq)) => {
+                Some((tex, w, h, mut src, color, seq)) => {
                     let c: Vec<i32> = inner.crop.iter().map(|a| a.load(Relaxed) as i32).collect();
                     let (sw, sh) = (src.right - src.left, src.bottom - src.top);
                     src.left += c[0].min(sw / 2);
@@ -1109,9 +1214,9 @@ fn render_session(inner: &Inner) -> Result<()> {
                     src.bottom -= c[3].min(sh / 2);
                     // Presented as often as the picture (also when the frame repeats), so a
                     // capture never waits on a still screen.
-                    cap_frame = Some((tex.clone(), w, h, src));
-                    if proc_.as_ref().map(|p| p.key) != Some((w, h, cw, ch)) {
-                        proc_ = match make_processor(gpu, w, h, cw, ch) {
+                    cap_frame = Some((tex.clone(), w, h, src, color));
+                    if proc_.as_ref().map(|p| p.key) != Some((w, h, cw, ch, color)) {
+                        proc_ = match make_processor(gpu, w, h, cw, ch, color) {
                             Ok(p) => Some(p),
                             Err(e) => {
                                 log::warn!("processor {w}x{h} -> {cw}x{ch}: {e}");
@@ -1236,9 +1341,9 @@ fn render_session(inner: &Inner) -> Result<()> {
                         .ClearRenderTargetView(rtv.as_ref().unwrap(), &[br, bgc, bb, 1.0]);
                 }
             }
-            if let (false, Some((tex, w, h, src))) = (capture_hwnd.is_invalid(), &cap_frame) {
+            if let (false, Some((tex, w, h, src, color))) = (capture_hwnd.is_invalid(), &cap_frame) {
                 let rot = inner.rotation.load(Relaxed);
-                if let Err(e) = present_capture(gpu, &factory, capture_hwnd, tex, *w, *h, *src, rot, &mut capture) {
+                if let Err(e) = present_capture(gpu, &factory, capture_hwnd, tex, *w, *h, *src, rot, *color, &mut capture) {
                     // The main picture must not suffer for it: stop copying.
                     log::warn!("capture window: {e}");
                     capture_hwnd = HWND::default();
@@ -1282,6 +1387,7 @@ unsafe fn present_capture(
     h: u32,
     src: RECT,
     rot: u32,
+    color: ColorInfo,
     cap: &mut Option<Capture>,
 ) -> Result<()> {
     // 1:1 with the phone's own pixels (rotation and crop applied), not the view's size.
@@ -1310,8 +1416,8 @@ unsafe fn present_capture(
             c.sc.ResizeBuffers(0, ow, oh, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG(0))?;
             c.size = (ow, oh);
         }
-        if c.proc_.as_ref().map(|p| p.key) != Some((w, h, ow, oh)) {
-            c.proc_ = Some(make_processor(gpu, w, h, ow, oh)?);
+        if c.proc_.as_ref().map(|p| p.key) != Some((w, h, ow, oh, color)) {
+            c.proc_ = Some(make_processor(gpu, w, h, ow, oh, color)?);
         }
         let p = c.proc_.as_ref().unwrap();
         let vc = &gpu.video_context;
@@ -1388,5 +1494,52 @@ unsafe fn apply_region(hwnd: HWND, key: Bounds, holes: &[Hole]) {
             let _ = DeleteObject(cut.into());
         }
         SetWindowRgn(hwnd, Some(rgn), true);
+    }
+}
+
+#[cfg(test)]
+mod color_tests {
+    use super::*;
+
+    #[test]
+    fn maps_color_info_to_dxgi_and_legacy_bitfield() {
+        let studio_709 = ColorInfo::default();
+        assert_eq!(
+            dxgi_input_color_space(studio_709),
+            DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709
+        );
+        assert_eq!(legacy_stream_color_bitfield(studio_709), 0x14);
+
+        let full_709 = ColorInfo {
+            full_range: true,
+            matrix: ColorMatrix::Bt709,
+            transfer: ColorTransfer::Sdr,
+        };
+        assert_eq!(
+            dxgi_input_color_space(full_709),
+            DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709
+        );
+        assert_eq!(legacy_stream_color_bitfield(full_709), 0x24);
+
+        let full_601 = ColorInfo {
+            full_range: true,
+            matrix: ColorMatrix::Bt601,
+            transfer: ColorTransfer::Sdr,
+        };
+        assert_eq!(
+            dxgi_input_color_space(full_601),
+            DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601
+        );
+        assert_eq!(legacy_stream_color_bitfield(full_601), 0x20);
+
+        let hlg_2020 = ColorInfo {
+            full_range: false,
+            matrix: ColorMatrix::Bt2020,
+            transfer: ColorTransfer::Hlg,
+        };
+        assert_eq!(
+            dxgi_input_color_space(hlg_2020),
+            DXGI_COLOR_SPACE_YCBCR_STUDIO_GHLG_TOPLEFT_P2020
+        );
     }
 }

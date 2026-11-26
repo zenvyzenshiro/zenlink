@@ -101,7 +101,7 @@ pub struct Engine {
     /// Why the last Start found no device (shown while no session is on screen).
     fail: Mutex<Option<String>>,
     /// Access units of the session on screen (its UDID), taken by the decoder's source.
-    frames: Mutex<Option<(String, Receiver<Vec<u8>>)>>,
+    frames: Mutex<Option<(String, Receiver<(Vec<u8>, bool)>)>>,
     watching: AtomicBool,
     /// Wi-Fi devices whose names were asked for this run (one tunnel each, once).
     asked: Mutex<HashSet<String>>,
@@ -1121,7 +1121,7 @@ impl Engine {
                     &mut l,
                     &sess.key,
                     hybrid,
-                    |au| {
+                    |au, rebuild| {
                         if stop.load(Relaxed) || restart.get() {
                             return false;
                         }
@@ -1135,8 +1135,11 @@ impl Engine {
                                 let _ = vtx.send(Input::Volume);
                             });
                         }
-                        if pic.borrow_mut().push(au) {
+                        let (got_key, need_key) = pic.borrow_mut().push(au, rebuild);
+                        if got_key {
                             sess.key.store(false, Relaxed);
+                        } else if need_key {
+                            sess.key.store(true, Relaxed);
                         }
                         true
                     },
@@ -1151,26 +1154,39 @@ impl Engine {
         };
         // Hands the picture to the decoder while the device is on screen.
         let screen = async {
+            let mut key_since: Option<Instant> = None;
             loop {
                 let shown = self.is_shown(&dev.udid);
                 let mut p = pic.borrow_mut();
                 if shown && p.tx.is_none() {
-                    let (tx, rx) = sync_channel(120);
+                    let (tx, rx) = sync_channel(30);
                     p.tx = Some(tx);
                     p.wait = Some(Instant::now());
                     sess.key.store(true, Relaxed);
+                    key_since = Some(Instant::now());
                     *self.frames.lock().unwrap() = Some((dev.udid.clone(), rx));
                 } else if !shown && p.tx.is_some() {
                     p.tx = None;
                     p.wait = None;
+                    key_since = None;
                     sess.key.store(false, Relaxed);
                     log::info!("apple: {} off screen, picture paused", dev.udid);
-                } else if p.wait.is_some_and(|w| w.elapsed() > KEY_WAIT) && p.started {
-                    // The device ignored the requests: a new stream opens with a keyframe.
-                    log::info!("apple: no keyframe after {KEY_WAIT:?}; restarting the stream");
-                    p.started = false;
-                    p.wait = Some(Instant::now());
-                    restart.set(true);
+                } else if shown && p.tx.is_some() && p.started {
+                    if sess.key.load(Relaxed) {
+                        let since = *key_since.get_or_insert_with(Instant::now);
+                        if since.elapsed() > KEY_WAIT {
+                            // The device ignored the requests: a new stream opens with a keyframe.
+                            log::info!("apple: no keyframe after 4 s; restarting the stream");
+                            p.started = false;
+                            p.wait = Some(Instant::now());
+                            key_since = None;
+                            restart.set(true);
+                        }
+                    } else {
+                        key_since = None;
+                    }
+                } else {
+                    key_since = None;
                 }
                 drop(p);
                 tokio::time::sleep(Duration::from_millis(50)).await;
@@ -1253,8 +1269,8 @@ impl VideoSource for AppleSource {
         // The stream opens with VPS/SPS/PPS; frames before them cannot be decoded.
         let deadline = Instant::now() + Duration::from_secs(10);
         loop {
-            let au = match rx.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
-                Ok(au) => au,
+            let (au, rebuild) = match rx.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
+                Ok(item) => item,
                 Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                     // Keep the channel for the next try (slow Wi-Fi), else the picture stays dead
                     // until the device is taken off screen and back.
@@ -1267,7 +1283,7 @@ impl VideoSource for AppleSource {
                 Err(_) => return None,
             };
             if let Some(info) = codec_info(&au, screen) {
-                let pending = frame(&au);
+                let pending = frame(&au, rebuild);
                 return Some((
                     info.clone(),
                     Box::new(AppleRecords {
@@ -1297,7 +1313,7 @@ impl VideoSource for AppleSource {
 struct AppleRecords {
     udid: String,
     /// Handed back to the engine on drop, so the decoder can reopen after a decode error.
-    rx: Option<Receiver<Vec<u8>>>,
+    rx: Option<Receiver<(Vec<u8>, bool)>>,
     engine: Arc<Engine>,
     config: Vec<u8>,
     pending: Option<Record>,
@@ -1310,8 +1326,8 @@ impl RecordStream for AppleRecords {
             return Some(r);
         }
         loop {
-            let au = match self.rx.as_ref()?.recv_timeout(Duration::from_secs(1)) {
-                Ok(au) => au,
+            let (au, rebuild) = match self.rx.as_ref()?.recv_timeout(Duration::from_secs(1)) {
+                Ok(item) => item,
                 Err(RecvTimeoutError::Timeout) => continue,
                 Err(RecvTimeoutError::Disconnected) => return None,
             };
@@ -1320,10 +1336,10 @@ impl RecordStream for AppleRecords {
                 codec_info(&au, self.screen).filter(|i| i.description != self.config)
             {
                 self.config = info.description.clone();
-                self.pending = frame(&au);
+                self.pending = frame(&au, rebuild);
                 return Some(Record::Config(info));
             }
-            if let Some(f) = frame(&au) {
+            if let Some(f) = frame(&au, rebuild) {
                 return Some(f);
             }
         }
@@ -1355,7 +1371,7 @@ fn codec_info(au: &[u8], screen: Option<(u32, u32)>) -> Option<CodecInfo> {
 }
 
 /// One decoder sample: the picture NAL units with 4-byte lengths; VPS/SPS/PPS go in the config.
-fn frame(au: &[u8]) -> Option<Record> {
+fn frame(au: &[u8], rebuild: bool) -> Option<Record> {
     let mut data = Vec::with_capacity(au.len());
     let mut key = false;
     for n in split_annexb(au).into_iter().filter(|n| n.len() > 2) {
@@ -1369,19 +1385,19 @@ fn frame(au: &[u8]) -> Option<Record> {
     }
     (!data.is_empty()).then_some(Record::Frame {
         key,
-        rebuild: false,
+        rebuild,
         data,
     })
 }
 
-/// How long a return to the screen waits for the requested keyframe before restarting.
-const KEY_WAIT: Duration = Duration::from_millis(2500);
+/// How long a keyframe request waits before restarting the stream.
+const KEY_WAIT: Duration = Duration::from_secs(4);
 
 /// The picture of one session: the decoder's channel while on screen, and the parameter sets
 /// that a keyframe without them is sent with.
 #[derive(Default)]
 struct Pic {
-    tx: Option<SyncSender<Vec<u8>>>,
+    tx: Option<SyncSender<(Vec<u8>, bool)>>,
     ps: Vec<u8>,
     /// Waiting for a keyframe since then: frames before it cannot be decoded.
     wait: Option<Instant>,
@@ -1390,8 +1406,8 @@ struct Pic {
 }
 
 impl Pic {
-    /// `true` for a keyframe.
-    fn push(&mut self, au: Vec<u8>) -> bool {
+    /// Returns `(got_keyframe, need_keyframe)`.
+    fn push(&mut self, au: Vec<u8>, mut rebuild: bool) -> (bool, bool) {
         self.started = true;
         let mut ps = Vec::new();
         let mut key = false;
@@ -1409,25 +1425,34 @@ impl Pic {
         if !bare {
             self.ps = ps;
         }
-        let Some(tx) = &self.tx else { return key };
+        let Some(tx) = &self.tx else {
+            return (key, false);
+        };
         if let Some(w) = self.wait {
             if !key {
-                return false;
+                return (false, false);
             }
             log::info!(
                 "apple: keyframe {} ms after the request",
                 w.elapsed().as_millis()
             );
             self.wait = None;
+            rebuild = true;
         }
         let au = if key && bare && !self.ps.is_empty() {
             [self.ps.as_slice(), &au].concat()
         } else {
             au
         };
-        // A full queue means the decoder stalls: drop the frame, the next keyframe heals it.
-        let _ = tx.try_send(au);
-        key
+        // A full queue means the decoder stalls: drop the frame and request a fresh keyframe.
+        match tx.try_send((au, rebuild)) {
+            Ok(()) => (key, false),
+            Err(std::sync::mpsc::TrySendError::Full(_)) => {
+                self.wait = Some(Instant::now());
+                (false, true)
+            }
+            Err(std::sync::mpsc::TrySendError::Disconnected(_)) => (key, false),
+        }
     }
 }
 
@@ -1481,16 +1506,32 @@ mod tests {
         key.extend(nal(33, &[4; 16]));
         key.extend(nal(34, &[5, 6]));
         key.extend(nal(19, &[2]));
-        assert!(p.push(key)); // off screen: only the parameter sets are kept
+        assert_eq!(p.push(key, false), (true, false)); // off screen: only the parameter sets are kept
         let (tx, rx) = sync_channel(8);
         p.tx = Some(tx);
         p.wait = Some(Instant::now());
-        assert!(!p.push(nal(1, &[0]))); // waiting: a delta frame is dropped
-        assert!(p.push(nal(19, &[4]))); // a bare keyframe goes with the kept VPS/SPS/PPS
-        assert!(codec_info(&rx.try_recv().unwrap(), None).is_some());
-        p.push(nal(1, &[3]));
-        assert_eq!(rx.try_recv().unwrap(), nal(1, &[3]));
+        assert_eq!(p.push(nal(1, &[0]), false), (false, false)); // waiting: a delta frame is dropped
+        assert_eq!(p.push(nal(19, &[4]), false), (true, false)); // a bare keyframe goes with the kept VPS/SPS/PPS
+        let (au, rebuild) = rx.try_recv().unwrap();
+        assert!(rebuild);
+        assert!(codec_info(&au, None).is_some());
+        p.push(nal(1, &[3]), false);
+        assert_eq!(rx.try_recv().unwrap(), (nal(1, &[3]), false));
         assert!(p.wait.is_none());
+    }
+
+    #[test]
+    fn pic_requests_keyframe_when_queue_overflows() {
+        let mut p = Pic::default();
+        let (tx, rx) = sync_channel(1);
+        p.tx = Some(tx);
+        assert_eq!(p.push(nal(1, &[1]), false), (false, false));
+        // Queue is full: arms wait and asks for a keyframe.
+        assert_eq!(p.push(nal(1, &[2]), false), (false, true));
+        assert!(p.wait.is_some());
+        let _ = rx.try_recv().unwrap();
+        // Subsequent delta frame is dropped while waiting.
+        assert_eq!(p.push(nal(1, &[3]), false), (false, false));
     }
 
     #[test]
@@ -1514,19 +1555,22 @@ mod tests {
         au.extend(nal(33, &[4; 16]));
         au.extend(nal(34, &[5, 6]));
         au.extend(nal(19, &[7, 8, 9])); // IDR_W_RADL
-        let Some(Record::Frame { key, data, .. }) = frame(&au) else {
+        let Some(Record::Frame {
+            key, rebuild, data, ..
+        }) = frame(&au, true)
+        else {
             panic!("no frame")
         };
-        assert!(key);
+        assert!(key && rebuild);
         assert_eq!(data, [&[0, 0, 0, 5][..], &[19 << 1, 1, 7, 8, 9]].concat());
         assert!(codec_info(&au, None).is_some());
 
-        let Some(Record::Frame { key, .. }) = frame(&nal(1, &[1, 2])) else {
+        let Some(Record::Frame { key, rebuild, .. }) = frame(&nal(1, &[1, 2]), false) else {
             panic!("no frame")
         };
-        assert!(!key);
+        assert!(!key && !rebuild);
         assert!(codec_info(&nal(1, &[1, 2]), None).is_none());
-        assert!(frame(&nal(32, &[1, 2])).is_none());
+        assert!(frame(&nal(32, &[1, 2]), false).is_none());
     }
 
     #[test]
