@@ -109,7 +109,7 @@ async fn run(a: Args) -> Result<(), String> {
         &mut l,
         &key,
         false,
-        |au| {
+        |au, _rebuild| {
             first.get_or_insert_with(Instant::now);
             frames += 1;
             bytes += au.len();

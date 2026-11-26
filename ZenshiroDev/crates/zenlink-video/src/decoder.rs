@@ -15,11 +15,11 @@ use windows::Win32::Media::MediaFoundation::*;
 use windows::Win32::System::Com::{CoInitializeEx, CoTaskMemFree, COINIT_MULTITHREADED};
 
 use zenlink_core::api::{Codec, CodecInfo};
-use zenlink_core::nal::{hevc_visible, parse_config, to_annexb, ParamSets};
+use zenlink_core::nal::{hevc_visible, parse_config, sps_color, to_annexb, ParamSets, VuiColor};
 use zenlink_core::source::{RecordStream, VideoSource};
 use zenlink_core::stream::Record;
 
-use crate::d3d::{Gpu, SharedRing, Slot};
+use crate::d3d::{ColorInfo, ColorMatrix, ColorTransfer, Gpu, SharedRing, Slot};
 use crate::stats::Stats;
 
 const MF_VERSION: u32 = 0x0002_0070;
@@ -27,6 +27,7 @@ const FRAME_100NS: i64 = 166_667;
 
 pub struct Mft {
     t: IMFTransform,
+    codec: Codec,
     hardware: bool,
     provides_samples: bool,
     out_size: u32,
@@ -37,6 +38,9 @@ pub struct Mft {
     visible: Option<[u32; 4]>,
     /// The source's picture size, when neither the decoder nor the SPS give one.
     display: Option<(u32, u32)>,
+    sps_color: Option<VuiColor>,
+    mf_color: VuiColor,
+    color: ColorInfo,
 }
 
 fn subtype(c: &Codec) -> GUID {
@@ -108,6 +112,7 @@ impl Mft {
 
             let mut me = Self {
                 t,
+                codec: codec.clone(),
                 hardware,
                 provides_samples: false,
                 out_size: 0,
@@ -116,6 +121,9 @@ impl Mft {
                 src: RECT::default(),
                 visible: None,
                 display: None,
+                sps_color: None,
+                mf_color: VuiColor::default(),
+                color: ColorInfo::default(),
             };
             // Some decoders (Microsoft's HEVC MFT) list no complete output
             // type until they have parsed the first frame; they then signal
@@ -174,9 +182,11 @@ impl Mft {
                         bottom: y + area.Area.cy,
                     };
                 }
+                self.mf_color = read_mf_color(&mt);
+                self.update_color();
                 self.crop_to_visible();
                 log::info!(
-                    "decoder output {}x{}, aperture {}, sps window {:?}, shown {:?}",
+                    "decoder output {}x{}, aperture {}, sps window {:?}, shown {:?}, sps color {:?}, mf color {:?}, resolved {:?}",
                     self.width,
                     self.height,
                     if got > 0 {
@@ -188,7 +198,10 @@ impl Mft {
                         "none".into()
                     },
                     self.visible,
-                    (self.src.left, self.src.top, self.src.right, self.src.bottom)
+                    (self.src.left, self.src.top, self.src.right, self.src.bottom),
+                    self.sps_color,
+                    self.mf_color,
+                    self.color,
                 );
                 let info = self.t.GetOutputStreamInfo(0)?;
                 self.provides_samples =
@@ -238,7 +251,16 @@ impl Mft {
     fn set_visible(&mut self, ps: &ParamSets, display: Option<(u32, u32)>) {
         self.visible = hevc_visible(&ps.annexb);
         self.display = display;
+        self.sps_color = sps_color(&self.codec, &ps.annexb);
+        self.update_color();
         self.crop_to_visible();
+    }
+
+    fn update_color(&mut self) {
+        let env = std::env::var("ZL_COLOR_RANGE")
+            .ok()
+            .map(|s| s.trim().to_ascii_lowercase());
+        self.color = resolve_color_info(self.sps_color, self.mf_color, env.as_deref());
     }
 
     pub fn flush(&self) {
@@ -341,10 +363,12 @@ fn publish(
                     w,
                     h,
                     src: mft.src,
+                    color: mft.color,
                 });
             }
             if let Some(s) = r.slots[idx].as_mut() {
                 s.src = mft.src;
+                s.color = mft.color;
             }
             idx
         };
@@ -526,6 +550,8 @@ fn session(
     let mut ts: i64 = 0;
     let mut got_key = false;
     let mut pending: VecDeque<(i64, Instant)> = VecDeque::new();
+    let mut inputs_since_output: u32 = 0;
+    let mut stalled_since: Option<Instant> = None;
     let mut upload = None;
     while !stop.load(Relaxed) {
         let Some(rec) = stream.next_record() else {
@@ -539,10 +565,16 @@ fn session(
                 mft.set_visible(&ps, info.display);
                 stats.hardware.store(mft.hardware, Relaxed);
                 got_key = false;
+                pending.clear();
+                inputs_since_output = 0;
+                stalled_since = None;
             }
             Record::Frame { key, rebuild, data } => {
                 if rebuild {
                     mft.flush();
+                    pending.clear();
+                    inputs_since_output = 0;
+                    stalled_since = None;
                 }
                 if key {
                     got_key = true;
@@ -557,6 +589,7 @@ fn session(
                     pending.pop_front();
                 }
                 let au = to_annexb(&data, &ps, key);
+                let decoded_before = stats.decoded.load(Relaxed);
                 let mut sink = |m: &mut Mft, s: IMFSample| {
                     let t = unsafe { s.GetSampleTime().unwrap_or(0) };
                     if let Some(pos) = pending.iter().position(|(pts, _)| *pts == t) {
@@ -577,17 +610,209 @@ fn session(
                         }
                     }
                 };
-                if let Err(e) = mft.input(&au, ts, &mut sink) {
-                    log::warn!("decode: {e}");
-                    stats.errors.fetch_add(1, Relaxed);
-                    mft.flush();
-                    got_key = false;
-                    if info.keyframes_on_request {
-                        source.request_keyframe();
+                match mft.input(&au, ts, &mut sink) {
+                    Ok(()) => {
+                        if stats.decoded.load(Relaxed) > decoded_before {
+                            inputs_since_output = 0;
+                            stalled_since = None;
+                        } else {
+                            inputs_since_output += 1;
+                            let since = *stalled_since.get_or_insert_with(Instant::now);
+                            if info.keyframes_on_request
+                                && inputs_since_output >= 20
+                                && since.elapsed() >= Duration::from_secs(1)
+                            {
+                                log::warn!(
+                                    "decoder: {} frames queued with no output for {:.1} s; flushing and requesting keyframe",
+                                    inputs_since_output,
+                                    since.elapsed().as_secs_f32()
+                                );
+                                mft.flush();
+                                got_key = false;
+                                pending.clear();
+                                inputs_since_output = 0;
+                                stalled_since = None;
+                                source.request_keyframe();
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        log::warn!("decode: {e}");
+                        stats.errors.fetch_add(1, Relaxed);
+                        mft.flush();
+                        got_key = false;
+                        pending.clear();
+                        inputs_since_output = 0;
+                        stalled_since = None;
+                        if info.keyframes_on_request {
+                            source.request_keyframe();
+                        }
                     }
                 }
             }
         }
     }
     Ok(())
+}
+
+unsafe fn read_mf_color(mt: &IMFMediaType) -> VuiColor {
+    let full_range = match mt.GetUINT32(&MF_MT_VIDEO_NOMINAL_RANGE).ok() {
+        Some(v) if v == MFNominalRange_0_255.0 as u32 => Some(true),
+        Some(v) if v == MFNominalRange_16_235.0 as u32 => Some(false),
+        _ => None,
+    };
+    let matrix = match mt.GetUINT32(&MF_MT_YUV_MATRIX).ok() {
+        Some(v) if v == MFVideoTransferMatrix_BT709.0 as u32 => Some(1),
+        Some(v) if v == MFVideoTransferMatrix_BT601.0 as u32 => Some(6),
+        Some(v)
+            if v == MFVideoTransferMatrix_BT2020_10.0 as u32
+                || v == MFVideoTransferMatrix_BT2020_12.0 as u32 =>
+        {
+            Some(9)
+        }
+        _ => None,
+    };
+    let primaries = match mt.GetUINT32(&MF_MT_VIDEO_PRIMARIES).ok() {
+        Some(v) if v == MFVideoPrimaries_BT709.0 as u32 => Some(1),
+        Some(v)
+            if v == MFVideoPrimaries_SMPTE170M.0 as u32
+                || v == MFVideoPrimaries_BT470_2_SysBG.0 as u32 =>
+        {
+            Some(6)
+        }
+        Some(v) if v == MFVideoPrimaries_BT2020.0 as u32 => Some(9),
+        Some(v) if v == MFVideoPrimaries_DCI_P3.0 as u32 => Some(12),
+        _ => None,
+    };
+    let transfer = match mt.GetUINT32(&MF_MT_TRANSFER_FUNCTION).ok() {
+        Some(v) if v == MFVideoTransFunc_2084.0 as u32 => Some(16),
+        Some(v) if v == MFVideoTransFunc_HLG.0 as u32 => Some(18),
+        Some(v) if v == MFVideoTransFunc_709.0 as u32 => Some(1),
+        Some(v) if v == MFVideoTransFunc_sRGB.0 as u32 => Some(13),
+        _ => None,
+    };
+    VuiColor {
+        full_range,
+        primaries,
+        transfer,
+        matrix,
+    }
+}
+
+fn specified_vui(v: Option<u8>) -> Option<u8> {
+    v.filter(|&x| x != 0 && x != 2)
+}
+
+pub(crate) fn resolve_color_info(
+    sps: Option<VuiColor>,
+    mf: VuiColor,
+    env_range: Option<&str>,
+) -> ColorInfo {
+    let full_range = match env_range {
+        Some("full") => true,
+        Some("studio" | "limited") => false,
+        _ => sps
+            .and_then(|v| v.full_range)
+            .or(mf.full_range)
+            .unwrap_or(false),
+    };
+    let matrix_code = specified_vui(sps.and_then(|v| v.matrix))
+        .or_else(|| specified_vui(mf.matrix));
+    let primaries_code = specified_vui(sps.and_then(|v| v.primaries))
+        .or_else(|| specified_vui(mf.primaries));
+    let matrix = match matrix_code {
+        Some(5 | 6) => ColorMatrix::Bt601,
+        Some(9 | 10) => ColorMatrix::Bt2020,
+        Some(1) => ColorMatrix::Bt709,
+        _ => match primaries_code {
+            Some(9) => ColorMatrix::Bt2020,
+            Some(5 | 6) => ColorMatrix::Bt601,
+            _ => ColorMatrix::Bt709,
+        },
+    };
+    let transfer = match specified_vui(sps.and_then(|v| v.transfer))
+        .or_else(|| specified_vui(mf.transfer))
+    {
+        Some(16) => ColorTransfer::Pq,
+        Some(18) => ColorTransfer::Hlg,
+        _ => ColorTransfer::Sdr,
+    };
+    ColorInfo {
+        full_range,
+        matrix,
+        transfer,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_color_prefers_sps_and_falls_back_to_mf_and_env() {
+        let sps_full = VuiColor {
+            full_range: Some(true),
+            primaries: Some(12),
+            transfer: Some(13),
+            matrix: Some(1),
+        };
+        assert_eq!(
+            resolve_color_info(Some(sps_full), VuiColor::default(), None),
+            ColorInfo {
+                full_range: true,
+                matrix: ColorMatrix::Bt709,
+                transfer: ColorTransfer::Sdr,
+            }
+        );
+
+        let mf_studio_601 = VuiColor {
+            full_range: Some(false),
+            primaries: Some(6),
+            transfer: Some(1),
+            matrix: Some(6),
+        };
+        assert_eq!(
+            resolve_color_info(None, mf_studio_601, None),
+            ColorInfo {
+                full_range: false,
+                matrix: ColorMatrix::Bt601,
+                transfer: ColorTransfer::Sdr,
+            }
+        );
+
+        assert_eq!(
+            resolve_color_info(Some(sps_full), mf_studio_601, Some("studio")).full_range,
+            false
+        );
+        assert_eq!(
+            resolve_color_info(None, mf_studio_601, Some("full")).full_range,
+            true
+        );
+
+        let hdr_hlg = VuiColor {
+            full_range: Some(false),
+            primaries: Some(9),
+            transfer: Some(18),
+            matrix: Some(9),
+        };
+        assert_eq!(
+            resolve_color_info(Some(hdr_hlg), VuiColor::default(), None),
+            ColorInfo {
+                full_range: false,
+                matrix: ColorMatrix::Bt2020,
+                transfer: ColorTransfer::Hlg,
+            }
+        );
+
+        let unspec = VuiColor {
+            full_range: None,
+            primaries: Some(2),
+            transfer: Some(2),
+            matrix: Some(2),
+        };
+        assert_eq!(
+            resolve_color_info(Some(unspec), VuiColor::default(), None),
+            ColorInfo::default()
+        );
+    }
 }
